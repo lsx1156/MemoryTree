@@ -236,7 +236,7 @@
     -fx-font-size: 10;
 }
 
-/* ===== Split Container ===== */
+/* ===== Split Container (Horizontal - Old, kept for compatibility) ===== */
 .split-container {
     -fx-background-color: #1e1e1e;
     -fx-padding: 0;
@@ -251,6 +251,39 @@
 
 .split-divider:hover {
     -fx-background-color: #0e639c;
+}
+
+/* ===== Vertical Split (上下布局) ===== */
+.vertical-split {
+    -fx-background-color: #1e1e1e;
+    -fx-padding: 0;
+}
+
+.split-divider-h {
+    -fx-min-height: 3;
+    -fx-pref-height: 3;
+    -fx-max-height: 3;
+    -fx-background-color: #252526;
+}
+
+/* 输入区紧凑 */
+.input-section {
+    -fx-background-color: #1e1e1e;
+}
+
+/* 输出区占主要空间 */
+.output-section {
+    -fx-background-color: #1e1e1e;
+}
+
+/* 工作记忆区紧凑 */
+.working-section {
+    -fx-background-color: #1e1e1e;
+}
+
+/* 持久记忆区占主要空间 */
+.persistent-section {
+    -fx-background-color: #1e1e1e;
 }
 
 /* ===== Pane Section ===== */

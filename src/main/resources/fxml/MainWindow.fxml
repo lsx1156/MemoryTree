@@ -9,7 +9,8 @@
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.memorytree.gui.MainController"
-            prefWidth="1400.0" prefHeight="900.0">
+            prefWidth="1200.0" prefHeight="800.0"
+            minWidth="800.0" minHeight="600.0">
 
     <top>
         <HBox styleClass="title-bar" alignment="CENTER_LEFT" spacing="12">
@@ -93,26 +94,25 @@
                             </HBox>
                         </HBox>
 
-                        <HBox styleClass="split-container" spacing="0">
-                            <VBox styleClass="pane-section" spacing="0" HBox.hgrow="ALWAYS">
+                        <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
+                            <VBox styleClass="pane-section input-section" spacing="0">
                                 <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
                                     <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
                                     <Label text="📝" styleClass="pane-icon"/>
                                     <Label text="输入问题" styleClass="pane-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="前提条件" styleClass="pane-subtitle"/>
                                 </HBox>
-                                <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="8">
-                                    <padding><Insets top="10" right="12" bottom="12" left="12"/></padding>
-                                    <TextArea fx:id="promptInput" VBox.vgrow="ALWAYS" promptText="请输入需要推理的问题..." styleClass="code-textarea"/>
-                                    <VBox spacing="4">
-                                        <Label text="前提条件" styleClass="sub-label"/>
-                                        <TextArea fx:id="premisesInput" prefHeight="60" promptText="可选：每行一条前提条件..." styleClass="code-textarea-sm"/>
-                                    </VBox>
+                                <VBox styleClass="pane-body" spacing="8">
+                                    <padding><Insets top="8" right="12" bottom="10" left="12"/></padding>
+                                    <TextArea fx:id="promptInput" promptText="请输入需要推理的问题..." styleClass="code-textarea" prefRowCount="4"/>
+                                    <TextArea fx:id="premisesInput" promptText="可选：每行一条前提条件..." styleClass="code-textarea-sm" prefRowCount="2"/>
                                 </VBox>
                             </VBox>
 
-                            <Region styleClass="split-divider"/>
+                            <Region styleClass="split-divider-h"/>
 
-                            <VBox styleClass="pane-section" spacing="0" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="pane-section output-section" spacing="0" VBox.vgrow="ALWAYS">
                                 <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
                                     <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
                                     <Label text="💡" styleClass="pane-icon"/>
@@ -126,11 +126,11 @@
                                     </HBox>
                                 </HBox>
                                 <VBox styleClass="pane-body" VBox.vgrow="ALWAYS">
-                                    <padding><Insets top="10" right="12" bottom="12" left="12"/></padding>
+                                    <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
                                     <TextArea fx:id="resultContent" editable="false" VBox.vgrow="ALWAYS" styleClass="output-textarea"/>
                                 </VBox>
                             </VBox>
-                        </HBox>
+                        </VBox>
                     </VBox>
                 </content>
             </Tab>
@@ -143,8 +143,8 @@
                             <Label text="🗄️" styleClass="tab-icon"/>
                             <Label text="记忆管理" styleClass="tab-title"/>
                         </HBox>
-                        <HBox styleClass="split-container" spacing="0">
-                            <VBox styleClass="pane-section" spacing="0" HBox.hgrow="ALWAYS">
+                        <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
+                            <VBox styleClass="pane-section working-section" spacing="0">
                                 <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
                                     <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
                                     <Label text="🧠" styleClass="pane-icon"/>
@@ -152,16 +152,15 @@
                                     <Region HBox.hgrow="ALWAYS"/>
                                     <Button text="清空" styleClass="btn-tool-sm" onAction="#handleClearWorking"/>
                                 </HBox>
-                                <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="8">
-                                    <padding><Insets top="10" right="12" bottom="12" left="12"/></padding>
-                                    <ListView fx:id="workingMemoryList" styleClass="memory-list" VBox.vgrow="ALWAYS"/>
-                                    <HBox spacing="6">
+                                <VBox styleClass="pane-body" spacing="6">
+                                    <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
+                                    <ListView fx:id="workingMemoryList" styleClass="memory-list" prefHeight="120"/>
+                                    <HBox spacing="6" alignment="CENTER">
                                         <Button text="添加" styleClass="btn-tool-sm" onAction="#handleAddWorking"/>
                                         <Button text="详情" styleClass="btn-tool-sm" onAction="#handleViewWorking"/>
                                         <Button text="编辑" styleClass="btn-tool-sm" onAction="#handleEditWorking"/>
                                         <Button text="移除" styleClass="btn-tool-sm-danger" onAction="#handleRemoveWorking"/>
-                                    </HBox>
-                                    <HBox spacing="6" alignment="CENTER">
+                                        <Region HBox.hgrow="ALWAYS"/>
                                         <Button text="◀" styleClass="btn-page" onAction="#prevWorkingPage" fx:id="workingPrevBtn"/>
                                         <Label fx:id="workingPageLabel" text="第 1/1 页 (共 0 条)" styleClass="page-label"/>
                                         <Button text="▶" styleClass="btn-page" onAction="#nextWorkingPage" fx:id="workingNextBtn"/>
@@ -169,9 +168,9 @@
                                 </VBox>
                             </VBox>
 
-                            <Region styleClass="split-divider"/>
+                            <Region styleClass="split-divider-h"/>
 
-                            <VBox styleClass="pane-section" spacing="0" HBox.hgrow="ALWAYS">
+                            <VBox styleClass="pane-section persistent-section" spacing="0" VBox.vgrow="ALWAYS">
                                 <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
                                     <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
                                     <Label text="📚" styleClass="pane-icon"/>
@@ -179,24 +178,23 @@
                                     <Region HBox.hgrow="ALWAYS"/>
                                     <TextField fx:id="memorySearchField" promptText="搜索..." styleClass="search-field" prefWidth="160"/>
                                 </HBox>
-                                <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="8">
-                                    <padding><Insets top="10" right="12" bottom="12" left="12"/></padding>
+                                <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="6">
+                                    <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
                                     <ListView fx:id="persistentMemoryList" styleClass="memory-list" VBox.vgrow="ALWAYS"/>
-                                    <HBox spacing="6">
+                                    <HBox spacing="6" alignment="CENTER">
                                         <Button text="添加" styleClass="btn-tool-sm" onAction="#handleAddPersistent"/>
                                         <Button text="详情" styleClass="btn-tool-sm" onAction="#handleViewPersistent"/>
                                         <Button text="编辑" styleClass="btn-tool-sm" onAction="#handleEditPersistent"/>
                                         <Button text="注入" styleClass="btn-tool-sm" onAction="#handleInjectMemory"/>
                                         <Button text="删除" styleClass="btn-tool-sm-danger" onAction="#handleDeletePersistent"/>
-                                    </HBox>
-                                    <HBox spacing="6" alignment="CENTER">
+                                        <Region HBox.hgrow="ALWAYS"/>
                                         <Button text="◀" styleClass="btn-page" onAction="#prevPersistentPage" fx:id="persistentPrevBtn"/>
                                         <Label fx:id="persistentPageLabel" text="第 1/1 页 (共 0 条)" styleClass="page-label"/>
                                         <Button text="▶" styleClass="btn-page" onAction="#nextPersistentPage" fx:id="persistentNextBtn"/>
                                     </HBox>
                                 </VBox>
                             </VBox>
-                        </HBox>
+                        </VBox>
                     </VBox>
                 </content>
             </Tab>
@@ -249,14 +247,14 @@
     </center>
 
     <right>
-        <VBox styleClass="sidebar-right" prefWidth="280" spacing="0">
+        <VBox styleClass="sidebar-right" prefWidth="280" spacing="0" VBox.vgrow="ALWAYS">
             <HBox styleClass="right-header" alignment="CENTER_LEFT" spacing="8">
                 <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
                 <Label text="🛠" styleClass="right-icon"/>
                 <Label text="状态面板" styleClass="right-title"/>
             </HBox>
 
-            <ScrollPane fitToWidth="true" styleClass="right-scroll">
+            <ScrollPane fitToWidth="true" styleClass="right-scroll" VBox.vgrow="ALWAYS">
                 <VBox spacing="12">
                     <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
 
@@ -309,7 +307,7 @@
                             <Label text="🌲" style="-fx-font-size: 14;"/>
                             <Label text="推导树" styleClass="right-card-title"/>
                         </HBox>
-                        <ListView fx:id="derivationTreeView" styleClass="derivation-list" prefHeight="100"/>
+                        <ListView fx:id="derivationTreeView" styleClass="derivation-list" prefHeight="120"/>
                     </VBox>
 
                     <VBox styleClass="right-card" spacing="8">
@@ -317,7 +315,9 @@
                             <Label text="🛡️" style="-fx-font-size: 14;"/>
                             <Label text="契约仲裁结果" styleClass="right-card-title"/>
                         </HBox>
-                        <VBox fx:id="arbitrationContainer" spacing="4" prefHeight="100" styleClass="arb-result-box"/>
+                        <VBox fx:id="arbitrationContainer" spacing="4" styleClass="arb-result-box">
+                            <Label text="暂无仲裁结果" style="-fx-text-fill: #6e7681; -fx-font-size: 12;"/>
+                        </VBox>
                     </VBox>
 
                     <VBox styleClass="right-card" spacing="8">
