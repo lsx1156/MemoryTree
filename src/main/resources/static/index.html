@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆树 MemoryTree - V2.1 纯逻辑类脑AI框架</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                        logic: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        memory: {
+                            50: '#fdf4ff',
+                            100: '#fae8ff',
+                            200: '#f5d0fe',
+                            300: '#f0abfc',
+                            400: '#e879f9',
+                            500: '#d946ef',
+                            600: '#c026d3',
+                            700: '#a21caf',
+                            800: '#86198f',
+                            900: '#701a75',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-hide {
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <header class="bg-gray-800 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                    <i class="fa fa-tree text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">记忆树 MemoryTree</h1>
+                    <p class="text-xs text-gray-400">V2.1 纯逻辑类脑AI框架</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="system-status" class="px-3 py-1 bg-gray-700 rounded-full text-sm">
+                    <i class="fa fa-circle text-red-500 mr-1"></i>初始化中
+                </span>
+                <button onclick="resetWorkingMemory()" class="px-3 py-1 bg-red-600 hover:bg-red-700 rounded text-sm flex items-center gap-1">
+                    <i class="fa fa-refresh"></i> 重置记忆
+                </button>
+            </div>
+        </header>
+
+        <div class="flex flex-1 overflow-hidden">
+            <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+                <nav class="p-4 space-y-1">
+                    <button onclick="switchTab('inference')" id="tab-inference" class="w-full text-left px-4 py-2 bg-primary-600 text-white rounded-lg flex items-center gap-2">
+                        <i class="fa fa-cog"></i> 逻辑推理
+                    </button>
+                    <button onclick="switchTab('memory')" id="tab-memory" class="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg flex items-center gap-2">
+                        <i class="fa fa-database"></i> 记忆管理
+                    </button>
+                    <button onclick="switchTab('branches')" id="tab-branches" class="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg flex items-center gap-2">
+                        <i class="fa fa-code-fork"></i> 树枝管理
+                    </button>
+                    <button onclick="switchTab('contract')" id="tab-contract" class="w-full text-left px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg flex items-center gap-2">
+                        <i class="fa fa-file-text"></i> 契约仲裁
+                    </button>
+                </nav>
+                
+                <div class="flex-1 p-4">
+                    <div class="bg-gray-700/50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                            <i class="fa fa-info-circle text-primary-400"></i> 架构原则
+                        </h3>
+                        <ul class="text-xs text-gray-400 space-y-2">
+                            <li><span class="text-primary-400">•</span> 树干路径依赖</li>
+                            <li><span class="text-primary-400">•</span> 树状技能生长</li>
+                            <li><span class="text-primary-400">•</span> 记忆内外分离</li>
+                            <li><span class="text-primary-400">•</span> 意识生命周期</li>
+                            <li><span class="text-primary-400">•</span> 内生自干涉</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-700">
+                    <div class="text-xs text-gray-500">
+                        <p>工作记忆: <span id="working-memory-size">0</span> KB</p>
+                        <p>持久记忆: <span id="persistent-memory-count">0</span> 条</p>
+                        <p>活跃树枝: <span id="active-branch-count">0</span> 个</p>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="flex-1 overflow-auto">
+                <div id="content-inference" class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">推理问题</label>
+                                <textarea id="prompt-input" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500" placeholder="请输入需要推理的问题..."></textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">前提条件 (每行一条)</label>
+                                <textarea id="premises-input" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-gray-100 placeholder-gray-500 focus:outline-none focus:border-primary-500" placeholder="可选：输入推理所需的前提条件..."></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">温度系数</label>
+                                    <input type="number" id="temperature-input" value="0.7" step="0.1" min="0" max="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-100 focus:outline-none focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2">最大内省轮次</label>
+                                    <input type="number" id="introspection-rounds" value="3" min="1" max="10" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-100 focus:outline-none focus:border-primary-500">
+                                </div>
+                            </div>
+                            
+                            <button onclick="executeInference()" id="infer-btn" class="w-full py-3 bg-primary-600 hover:bg-primary-700 rounded-lg font-medium flex items-center justify-center gap-2">
+                                <i class="fa fa-play"></i> 执行逻辑推理
+                            </button>
+                        </div>
+
+                        <div class="bg-gray-800 rounded-lg p-4 h-fit">
+                            <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa fa-spinner text-primary-400"></i> 推理状态机
+                            </h3>
+                            <div class="space-y-2">
+                                <div id="state-idle" class="flex items-center gap-2 text-gray-400">
+                                    <span class="w-3 h-3 rounded-full bg-gray-600"></span> IDLE
+                                </div>
+                                <div id="state-draft" class="flex items-center gap-2 text-gray-400">
+                                    <span class="w-3 h-3 rounded-full bg-gray-600"></span> DRAFT_GENERATE
+                                </div>
+                                <div id="state-validate" class="flex items-center gap-2 text-gray-400">
+                                    <span class="w-3 h-3 rounded-full bg-gray-600"></span> LOGIC_VALIDATE
+                                </div>
+                                <div id="state-rewrite" class="flex items-center gap-2 text-gray-400">
+                                    <span class="w-3 h-3 rounded-full bg-gray-600"></span> REWRITE
+                                </div>
+                                <div id="state-output" class="flex items-center gap-2 text-gray-400">
+                                    <span class="w-3 h-3 rounded-full bg-gray-600"></span> OUTPUT
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 space-y-4">
+                        <div class="bg-gray-800 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa fa-terminal text-logic-400"></i> 推理结果
+                            </h3>
+                            <div id="result-content" class="text-gray-100 whitespace-pre-wrap min-h-[150px]"></div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-gray-800 rounded-lg p-4">
+                                <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                                    <i class="fa fa-sitemap text-primary-400"></i> 推导树
+                                </h3>
+                                <ul id="derivation-tree" class="space-y-2 text-sm"></ul>
+                            </div>
+
+                            <div class="bg-gray-800 rounded-lg p-4">
+                                <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                                    <i class="fa fa-shield text-logic-400"></i> 契约仲裁结果
+                                </h3>
+                                <div id="arbitration-result" class="text-sm space-y-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa fa-bar-chart text-memory-400"></i> 推理统计
+                            </h3>
+                            <div class="grid grid-cols-4 gap-4 text-sm">
+                                <div class="bg-gray-700/50 rounded p-3">
+                                    <p class="text-gray-400">内省轮次</p>
+                                    <p id="stat-rounds" class="text-2xl font-bold text-primary-400">0</p>
+                                </div>
+                                <div class="bg-gray-700/50 rounded p-3">
+                                    <p class="text-gray-400">合规分数</p>
+                                    <p id="stat-compliance" class="text-2xl font-bold text-logic-400">0.0</p>
+                                </div>
+                                <div class="bg-gray-700/50 rounded p-3">
+                                    <p class="text-gray-400">推理耗时</p>
+                                    <p id="stat-duration" class="text-2xl font-bold text-memory-400">0ms</p>
+                                </div>
+                                <div class="bg-gray-700/50 rounded p-3">
+                                    <p class="text-gray-400">置信度</p>
+                                    <p id="stat-confidence" class="text-2xl font-bold text-yellow-400">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-memory" class="p-6 hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-4">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-3">工作记忆 (意识态)</h3>
+                                <div id="working-memory-list" class="bg-gray-800 rounded-lg p-4 min-h-[300px]">
+                                    <p class="text-gray-500 text-center py-8">工作记忆为空</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-semibold mb-3">持久记忆 (遗产态)</h3>
+                                <div id="persistent-memory-list" class="bg-gray-800 rounded-lg p-4 min-h-[300px]">
+                                    <p class="text-gray-500 text-center py-8">加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="bg-gray-800 rounded-lg p-4">
+                                <h3 class="text-sm font-semibold mb-3">新建记忆</h3>
+                                <div class="space-y-3">
+                                    <input type="text" id="new-memory-content" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-gray-100" placeholder="记忆内容">
+                                    <input type="text" id="new-memory-tags" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-gray-100" placeholder="标签 (逗号分隔)">
+                                    <button onclick="storeMemory()" class="w-full py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-sm">保存到持久记忆</button>
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-800 rounded-lg p-4">
+                                <h3 class="text-sm font-semibold mb-3">检索记忆</h3>
+                                <div class="space-y-3">
+                                    <input type="text" id="search-keyword" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-gray-100" placeholder="关键词">
+                                    <button onclick="searchMemory()" class="w-full py-2 bg-logic-600 hover:bg-logic-700 rounded-lg text-sm">检索</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-branches" class="p-6 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div id="branches-list" class="col-span-full">
+                            <h3 class="text-lg font-semibold mb-4">强化学习树枝</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="bg-gray-800 rounded-lg p-4">
+                                    <p class="text-gray-500">加载中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-contract" class="p-6 hidden">
+                    <div class="max-w-3xl mx-auto">
+                        <h3 class="text-lg font-semibold mb-4">契约仲裁规则</h3>
+                        <div id="contract-clauses" class="space-y-3">
+                            <div class="bg-gray-800 rounded-lg p-4">
+                                <p class="text-gray-500">加载中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

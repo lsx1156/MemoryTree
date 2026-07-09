@@ -1,0 +1,85 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IntelliJ IDEA
+.idea
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Java
+hs_err_pid*
+replay_pid*
+*.hprof
+
+# Spring Boot
+*.original
+
+# 数据库与运行时数据
+*.db
+*.db-journal
+memorytree.db
+data/
+memorytree-data/
+
+# 构建输出与发布包
+release/
+release-new/
+release-new2/
+jpackage_input/
+jpackage-input/
+build_output.txt
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+temp_*.txt
+v2.*_text.txt
+proj_text.txt
+v2.*_extract/
+proj_extract/
+v2.*.zip
+proj.zip
+
+# C# 启动器构建产物（如保留）
+obj/
+MemoryTreeLauncher.exe
+
+# Maven 构建产物（根目录泄漏）
+META-INF/
+
+# 临时编译脚本
+compile_temp.bat
+
+# 运行时生成的契约与记忆（用户私有数据）
+# 注意：保留源码中的默认契约模板，但忽略运行时数据

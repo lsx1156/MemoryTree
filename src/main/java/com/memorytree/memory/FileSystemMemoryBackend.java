@@ -1,0 +1,204 @@
+package com.memorytree.memory;
+
+import com.memorytree.dto.MemoryEntry;
+import com.memorytree.dto.MemoryQuery;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Component
+public class FileSystemMemoryBackend implements MemoryBackend {
+
+    private final String MEMORY_DIR;
+    private final String MEMORY_FILE;
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private List<MemoryEntry> memoryStore = new ArrayList<>();
+
+    public FileSystemMemoryBackend() {
+        String appData = System.getProperty("user.home") + "/.memorytree";
+        this.MEMORY_DIR = appData + "/data/memory";
+        this.MEMORY_FILE = MEMORY_DIR + "/memory_store.json";
+    }
+
+    @PostConstruct
+    @Override
+    public void initialize() {
+        File dir = new File(MEMORY_DIR);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File file = new File(MEMORY_FILE);
+        if (file.exists()) {
+            try {
+                memoryStore = objectMapper.readValue(file, new TypeReference<List<MemoryEntry>>() {});
+            } catch (IOException e) {
+                memoryStore = new ArrayList<>();
+            }
+        }
+        
+        if (memoryStore.isEmpty()) {
+            seedDefaultMemories();
+        }
+    }
+    
+    private void seedDefaultMemories() {
+        List<MemoryEntry> defaultMemories = new ArrayList<>();
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("scholar_001")
+                .content("学者思维模式：追求知识的深度与广度，重视证据与逻辑，保持怀疑精神与开放心态。学者的核心素养包括：文献综述能力、批判性思维、方法论自觉、学术规范意识。")
+                .tags(java.util.Arrays.asList("学者", "思维模式", "学术素养"))
+                .saliencyScore(0.85)
+                .accessCount(0)
+                .build());
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("scholar_002")
+                .content("学术研究方法论：提出问题→文献综述→建立假设→设计实验→收集数据→分析验证→得出结论。每一步都需要严谨的逻辑和可复现的操作。")
+                .tags(java.util.Arrays.asList("学者", "研究方法", "方法论"))
+                .saliencyScore(0.9)
+                .accessCount(0)
+                .build());
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("scholar_003")
+                .content("逻辑推理的基本类型：演绎推理（从一般到特殊）、归纳推理（从特殊到一般）、溯因推理（从结果推原因）、类比推理（基于相似性）。演绎推理保证结论的必然性，其余三种提供或然性结论。")
+                .tags(java.util.Arrays.asList("学者", "逻辑", "推理"))
+                .saliencyScore(0.8)
+                .accessCount(0)
+                .build());
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("researcher_001")
+                .content("研究者工作准则：1. 问题导向而非方法导向；2. 保持对反常现象的敏感；3. 记录每一个失败的实验；4. 定期复盘研究方向；5. 与同行交流获取反馈；6. 维护研究笔记的连续性与可追溯性。")
+                .tags(java.util.Arrays.asList("研究者", "工作准则", "科研习惯"))
+                .saliencyScore(0.88)
+                .accessCount(0)
+                .build());
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("researcher_002")
+                .content("科学发现的常见路径：偶然观察→好奇心驱动→系统探索→理论构建→验证证伪。重大发现往往始于对'异常'的关注，而非预设的研究计划。")
+                .tags(java.util.Arrays.asList("研究者", "科学发现", "创新"))
+                .saliencyScore(0.75)
+                .accessCount(0)
+                .build());
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("researcher_003")
+                .content("研究者的认知偏差防范：确认偏差（只寻找支持证据）、锚定效应（过度依赖第一印象）、可得性启发（高估易想起的事件）、幸存者偏差（只关注成功案例）。好的研究者主动寻找证伪证据。")
+                .tags(java.util.Arrays.asList("研究者", "认知偏差", "批判性思维"))
+                .saliencyScore(0.82)
+                .accessCount(0)
+                .build());
+        
+        defaultMemories.add(MemoryEntry.builder()
+                .id("common_001")
+                .content("知识树结构：最底层是事实与数据，中间层是理论与模型，最高层是范式与世界观。学者的任务是在各层之间建立严谨的逻辑连接，研究者的任务是扩展或修正知识树的边界。")
+                .tags(java.util.Arrays.asList("学者", "研究者", "知识结构"))
+                .saliencyScore(0.7)
+                .accessCount(0)
+                .build());
+        
+        for (MemoryEntry entry : defaultMemories) {
+            entry.setCreatedAt(java.time.LocalDateTime.now());
+            entry.setLastAccessedAt(java.time.LocalDateTime.now());
+            memoryStore.add(entry);
+        }
+        
+        persist();
+    }
+
+    @Override
+    public MemoryEntry store(MemoryEntry entry) {
+        if (entry.getId() == null || entry.getId().isEmpty()) {
+            entry.setId(UUID.randomUUID().toString());
+        }
+        entry.setCreatedAt(LocalDateTime.now());
+        entry.setLastAccessedAt(LocalDateTime.now());
+        
+        Optional<MemoryEntry> existing = memoryStore.stream()
+                .filter(e -> e.getId().equals(entry.getId()))
+                .findFirst();
+        
+        if (existing.isPresent()) {
+            memoryStore.remove(existing.get());
+        }
+        memoryStore.add(entry);
+        persist();
+        
+        return entry;
+    }
+
+    @Override
+    public Optional<MemoryEntry> retrieve(String id) {
+        return memoryStore.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .map(entry -> {
+                    entry.setLastAccessedAt(LocalDateTime.now());
+                    entry.setAccessCount(entry.getAccessCount() + 1);
+                    persist();
+                    return entry;
+                });
+    }
+
+    @Override
+    public List<MemoryEntry> query(MemoryQuery query) {
+        return memoryStore.stream()
+                .filter(entry -> {
+                    if (query.getKeyword() != null && !query.getKeyword().isEmpty()) {
+                        if (!entry.getContent().toLowerCase().contains(query.getKeyword().toLowerCase())) {
+                            return false;
+                        }
+                    }
+                    if (query.getTags() != null && !query.getTags().isEmpty()) {
+                        if (!entry.getTags().containsAll(query.getTags())) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .limit(query.getLimit())
+                .peek(entry -> {
+                    entry.setLastAccessedAt(LocalDateTime.now());
+                    entry.setAccessCount(entry.getAccessCount() + 1);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void delete(String id) {
+        memoryStore.removeIf(e -> e.getId().equals(id));
+        persist();
+    }
+
+    @Override
+    public List<MemoryEntry> getAll() {
+        return new ArrayList<>(memoryStore);
+    }
+
+    @Override
+    public int getTotalCount() {
+        return memoryStore.size();
+    }
+
+    private void persist() {
+        try {
+            objectMapper.writeValue(new File(MEMORY_FILE), memoryStore);
+        } catch (IOException e) {
+            // ignore
+        }
+    }
+}

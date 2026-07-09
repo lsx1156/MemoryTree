@@ -1,0 +1,351 @@
+package com.memorytree.arbiter;
+
+import com.memorytree.dto.ArbitrationResultDTO;
+import com.memorytree.dto.ContractBook;
+import com.memorytree.dto.ContractClause;
+import com.memorytree.enums.ArbitrationResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.stereotype.Component;
+
+import jakarta.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+public class DefaultContractArbiter implements ContractArbiter {
+
+    private final String DEFAULT_CONTRACT_PATH;
+    private final String CONTRACT_DIR;
+    private ContractBook activeContract;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public DefaultContractArbiter() {
+        String appData = System.getProperty("user.home") + "/.memorytree";
+        this.CONTRACT_DIR = appData + "/data/contract";
+        this.DEFAULT_CONTRACT_PATH = CONTRACT_DIR + "/default_contract.json";
+    }
+
+    @PostConstruct
+    public void init() {
+        File contractFile = new File(DEFAULT_CONTRACT_PATH);
+        if (contractFile.exists()) {
+            try {
+                activeContract = objectMapper.readValue(contractFile, ContractBook.class);
+            } catch (IOException e) {
+                activeContract = createDefaultContract();
+            }
+        } else {
+            activeContract = createDefaultContract();
+            persistContract();
+        }
+    }
+
+    @Override
+    public ArbitrationResultDTO validateDraft(String draft) {
+        return validate(draft, true);
+    }
+
+    @Override
+    public ArbitrationResultDTO validateFinal(String finalResult) {
+        return validate(finalResult, false);
+    }
+
+    @Override
+    public ArbitrationResultDTO validate(String text) {
+        return validate(text, false);
+    }
+
+    private ArbitrationResultDTO validate(String text, boolean isDraft) {
+        if (activeContract == null || activeContract.getClauses() == null) {
+            return ArbitrationResultDTO.builder()
+                    .result(ArbitrationResult.COMPLIANT)
+                    .complianceScore(1.0)
+                    .explanation("No contract loaded, defaulting to compliant")
+                    .build();
+        }
+
+        List<String> matchedRules = new ArrayList<>();
+        String violatingClauseId = null;
+        String violatingClauseName = null;
+        double complianceScore = 1.0;
+        boolean failSafeTriggered = false;
+
+        for (ContractClause clause : activeContract.getClauses()) {
+            boolean violated = checkClause(text, clause);
+            if (violated) {
+                matchedRules.add(clause.getRule());
+                complianceScore -= clause.getSeverity() * 0.2;
+                
+                if (clause.isFailSafe()) {
+                    failSafeTriggered = true;
+                    violatingClauseId = clause.getId();
+                    violatingClauseName = clause.getName();
+                    break;
+                }
+                
+                if (violatingClauseId == null) {
+                    violatingClauseId = clause.getId();
+                    violatingClauseName = clause.getName();
+                }
+            }
+        }
+
+        complianceScore = Math.max(0, complianceScore);
+
+        ArbitrationResult result;
+        if (failSafeTriggered) {
+            result = ArbitrationResult.FAIL_SAFE_TRIGGERED;
+        } else if (complianceScore < 0.5) {
+            result = ArbitrationResult.NON_COMPLIANT;
+        } else if (complianceScore < 0.8) {
+            result = ArbitrationResult.LOW_CONFIDENCE;
+        } else {
+            result = ArbitrationResult.COMPLIANT;
+        }
+
+        return ArbitrationResultDTO.builder()
+                .result(result)
+                .violatingClauseId(violatingClauseId)
+                .violatingClauseName(violatingClauseName)
+                .matchedRules(matchedRules)
+                .complianceScore(complianceScore)
+                .explanation(buildExplanation(result, matchedRules))
+                .build();
+    }
+
+    private boolean checkClause(String text, ContractClause clause) {
+        String rule = clause.getRule().toLowerCase();
+        String textLower = text.toLowerCase();
+        
+        if (!clause.isEnabled()) {
+            return false;
+        }
+        
+        if (clause.isFailSafe()) {
+            return false;
+        }
+        
+        if (rule.contains("不得包含")) {
+            String forbidden = extractForbiddenWord(rule);
+            return textLower.contains(forbidden.toLowerCase());
+        }
+        
+        if (rule.contains("必须包含")) {
+            String required = extractRequiredWord(rule);
+            return !textLower.contains(required.toLowerCase());
+        }
+        
+        if (rule.contains("禁止") || rule.contains("避免")) {
+            String[] parts = rule.split("[禁止避免]");
+            if (parts.length > 1) {
+                String forbidden = parts[1].trim().toLowerCase();
+                if (forbidden.contains("有害") || forbidden.contains("非法") || 
+                    forbidden.contains("伦理")) {
+                    return false;
+                }
+                return textLower.contains(forbidden);
+            }
+        }
+        
+        if (rule.contains("逻辑推导")) {
+            return !textLower.contains("推导") && !textLower.contains("推理") && !textLower.contains("结论");
+        }
+        
+        if (rule.contains("证据支持")) {
+            return !textLower.contains("根据") && !textLower.contains("基于") && !textLower.contains("证据");
+        }
+        
+        return false;
+    }
+
+    private String extractForbiddenWord(String rule) {
+        int idx = rule.indexOf("不得包含") + 4;
+        return rule.substring(idx).trim();
+    }
+
+    private String extractRequiredWord(String rule) {
+        int idx = rule.indexOf("必须包含") + 4;
+        return rule.substring(idx).trim();
+    }
+
+    private String buildExplanation(ArbitrationResult result, List<String> matchedRules) {
+        StringBuilder sb = new StringBuilder();
+        switch (result) {
+            case COMPLIANT:
+                sb.append("契约仲裁通过：输出符合所有规则约束。");
+                break;
+            case NON_COMPLIANT:
+                sb.append("契约仲裁失败：输出违反以下规则：");
+                for (String rule : matchedRules) {
+                    sb.append("\n- ").append(rule);
+                }
+                break;
+            case LOW_CONFIDENCE:
+                sb.append("契约仲裁低置信度：输出部分符合规则，建议审查。");
+                break;
+            case FAIL_SAFE_TRIGGERED:
+                sb.append("FAIL-SAFE触发：输出违反安全边界规则，强制终止。");
+                break;
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public ContractBook loadContract(String filePath) {
+        try {
+            activeContract = objectMapper.readValue(new File(filePath), ContractBook.class);
+            return activeContract;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public void unloadContract() {
+        activeContract = null;
+    }
+
+    @Override
+    public boolean hasActiveContract() {
+        return activeContract != null;
+    }
+
+    @Override
+    public String getContractInfo() {
+        if (activeContract == null) {
+            return "No contract loaded";
+        }
+        return String.format("Contract: %s v%s, %d clauses", 
+                activeContract.getName(), 
+                activeContract.getVersion(),
+                activeContract.getClauses().size());
+    }
+
+    @Override
+    public ContractBook getContractBook() {
+        return activeContract;
+    }
+
+    @Override
+    public void addClause(ContractClause clause) {
+        if (activeContract != null && activeContract.getClauses() != null) {
+            activeContract.getClauses().add(clause);
+            persistContract();
+        }
+    }
+
+    @Override
+    public void updateClause(String clauseId, ContractClause clause) {
+        if (activeContract != null && activeContract.getClauses() != null) {
+            for (int i = 0; i < activeContract.getClauses().size(); i++) {
+                if (activeContract.getClauses().get(i).getId().equals(clauseId)) {
+                    activeContract.getClauses().set(i, clause);
+                    persistContract();
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void removeClause(String clauseId) {
+        if (activeContract != null && activeContract.getClauses() != null) {
+            activeContract.getClauses().removeIf(c -> c.getId().equals(clauseId));
+            persistContract();
+        }
+    }
+
+    @Override
+    public void saveContract() {
+        persistContract();
+    }
+
+    @Override
+    public void toggleClauseEnabled(String clauseId, boolean enabled) {
+        if (activeContract != null && activeContract.getClauses() != null) {
+            for (ContractClause clause : activeContract.getClauses()) {
+                if (clause.getId().equals(clauseId)) {
+                    clause.setEnabled(enabled);
+                    persistContract();
+                    break;
+                }
+            }
+        }
+    }
+
+    private ContractBook createDefaultContract() {
+        List<ContractClause> clauses = new ArrayList<>();
+        
+        clauses.add(ContractClause.builder()
+                .id("c1")
+                .name("禁止绝对化表述")
+                .rule("不得包含'绝对'、'必定'、'毫无疑问'等绝对化词汇")
+                .description("防止过度自信的逻辑断言")
+                .failSafe(false)
+                .severity(0.3)
+                .enabled(true)
+                .build());
+        
+        clauses.add(ContractClause.builder()
+                .id("c2")
+                .name("逻辑推导要求")
+                .rule("必须包含逻辑推导过程")
+                .description("确保推理链完整可见")
+                .failSafe(false)
+                .severity(0.5)
+                .enabled(true)
+                .build());
+        
+        clauses.add(ContractClause.builder()
+                .id("c3")
+                .name("证据支持要求")
+                .rule("结论必须有证据或前提支持")
+                .description("禁止无根据的断言")
+                .failSafe(false)
+                .severity(0.4)
+                .enabled(true)
+                .build());
+        
+        clauses.add(ContractClause.builder()
+                .id("c4")
+                .name("安全边界")
+                .rule("禁止输出有害、非法或违反伦理的内容")
+                .description("Fail-Safe硬边界")
+                .failSafe(true)
+                .severity(1.0)
+                .enabled(true)
+                .build());
+        
+        clauses.add(ContractClause.builder()
+                .id("c5")
+                .name("一致性检查")
+                .rule("前后陈述必须逻辑一致")
+                .description("防止自相矛盾")
+                .failSafe(false)
+                .severity(0.4)
+                .enabled(true)
+                .build());
+
+        return ContractBook.builder()
+                .id("default")
+                .name("默认逻辑契约")
+                .version("1.0")
+                .clauses(clauses)
+                .build();
+    }
+
+    private void persistContract() {
+        try {
+            File dir = new File(CONTRACT_DIR);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValue(new File(DEFAULT_CONTRACT_PATH), activeContract);
+        } catch (IOException e) {
+            // ignore
+        }
+    }
+}

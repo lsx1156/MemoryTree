@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: memorytree
+  main:
+    web-application-type: none
+  datasource:
+    url: jdbc:sqlite:memorytree.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: qwen2.5:7b
+        options:
+          temperature: 0.3
+          top-p: 0.9
+          num-predict: 2048
+
+logging:
+  level:
+    com.memorytree: INFO
+    org.springframework.ai: INFO
+    root: WARN
+
+memorytree:
+  kernel:
+    model-path: qwen2.5:7b
+    default-temperature: 0.3
