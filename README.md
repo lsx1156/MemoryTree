@@ -917,12 +917,3 @@ release\MemoryTree\MemoryTree.exe
 ## 十八、许可证
 
 本项目仅供学习与研究使用。
-
-***
-
-## 十九、文档参考
-
-- 《记忆树 MemoryTree V3.1 运行时边界审计规范》
-- 《记忆树 MemoryTree V3.0 推理流水线架构规范》
-- 《记忆树 MemoryTree V2.1 认知架构规范》
-- 《记忆树 MemoryTree V2.0 认知架构规范》
