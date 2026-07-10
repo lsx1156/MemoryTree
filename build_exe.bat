@@ -40,6 +40,7 @@ echo Done
 echo.
 
 echo [4/4] 创建EXE...
+if exist "release" rmdir /s /q "release"
 "%JAVA_HOME%\bin\jpackage.exe" ^
     --type app-image ^
     --name MemoryTree ^

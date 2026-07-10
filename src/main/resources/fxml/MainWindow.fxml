@@ -68,8 +68,12 @@
     </left>
 
     <center>
-        <HBox spacing="0">
-            <TabPane fx:id="mainTabPane" styleClass="editor-tabpane" tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints percentWidth="75" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="25" hgrow="NEVER"/>
+            </columnConstraints>
+            <TabPane fx:id="mainTabPane" styleClass="editor-tabpane" tabClosingPolicy="UNAVAILABLE" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <Tab fx:id="tabInference" text="逻辑推理">
                     <content>
                         <VBox styleClass="editor-page" spacing="0">
@@ -246,7 +250,7 @@
                 </Tab>
             </TabPane>
 
-            <VBox styleClass="sidebar-right" spacing="0" VBox.vgrow="ALWAYS" style="-fx-pref-width: 25%; -fx-max-width: 25%;">
+            <VBox styleClass="sidebar-right" spacing="0" VBox.vgrow="ALWAYS" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <HBox styleClass="right-header" alignment="CENTER_LEFT" spacing="8">
                     <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
                     <Label text="🛠" styleClass="right-icon"/>
@@ -359,6 +363,6 @@
                     </VBox>
                 </ScrollPane>
             </VBox>
-        </HBox>
+        </GridPane>
     </center>
 </BorderPane>
