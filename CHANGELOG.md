@@ -3,6 +3,16 @@
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，
 并采用 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## [3.1.5] - 2026-07-11
+
+### 修复
+
+- **模型大小推荐逻辑修正**：`HardwareDetector.getRecommendedModelSize()` 阈值从 16GB→7B/8GB→3B/4GB→1B 调整为 16GB→14B/8GB→7B/4GB→3B/2GB→0.5B，与 qwen2.5 实际模型规格对齐
+- **README 环境要求更新**：最低内存从 8GB 降至 4GB，推荐 8GB+，新增内存与模型选择对照表及 GPU 加速说明
+- **首次运行检查清单**：内存要求同步更新为 4GB（推荐 8GB+，有 GPU 可适当降低）
+
+---
+
 ## [3.1.4] - 2026-07-11
 
 ### 新增

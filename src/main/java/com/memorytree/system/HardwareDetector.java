@@ -104,13 +104,15 @@ public class HardwareDetector {
         long availableMemoryGB = info.getAvailableMemoryBytes() / (1024 * 1024 * 1024);
 
         if (availableMemoryGB >= 16) {
-            return "7B";
+            return "14B";
         } else if (availableMemoryGB >= 8) {
-            return "3B";
+            return "7B";
         } else if (availableMemoryGB >= 4) {
-            return "1B";
+            return "3B";
+        } else if (availableMemoryGB >= 2) {
+            return "0.5B";
         } else {
-            return "<1B";
+            return "<0.5B";
         }
     }
 

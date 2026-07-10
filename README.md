@@ -176,10 +176,16 @@ IDLE → DRAFT_GENERATE → LOGIC_VALIDATE → [VALID] → OUTPUT
 | --- | ---- | -------- |
 | JDK | 21+  | 21+      |
 | CPU | 4核   | 8核+      |
-| 内存  | 8GB  | 16GB+    |
-| 存储  | 10GB | 20GB SSD |
-| GPU | 不需要  | 不需要      |
+| 内存  | 4GB  | 8GB+    |
+| 存储  | 5GB | 10GB SSD |
+| GPU | 不需要  | 高性能GPU可加速推理（Ollama自动调用）      |
 | 网络  | 不需要  | 不需要      |
+
+> 💡 **内存与模型选择说明**：
+> - **4GB 内存**：可运行 `qwen2.5:3b`（约 2GB 模型文件）
+> - **8GB 内存**：推荐 `qwen2.5:7b`（约 4.4GB 模型文件，本项目默认配置）
+> - **16GB+ 内存**：可尝试 `qwen2.5:14b`（约 8.5GB 模型文件）
+> - **有高性能 GPU**：Ollama 会自动调用 GPU 加速推理，速度显著提升，内存占用可适度降低
 
 ### 5.2 安装 Ollama
 
@@ -741,7 +747,7 @@ MemoryTree/
 | ---------- | ----- | -------------------------------- |
 | CPU 核心数检测  | ✅ 已实现 | `Runtime.availableProcessors()`  |
 | 可用内存检测     | ✅ 已实现 | `OperatingSystemMXBean`          |
-| 自动推荐内核规格   | ✅ 已实现 | 16GB+→7B, 8GB+→3B, 4GB+→1B       |
+| 自动推荐内核规格   | ✅ 已实现 | 16GB+→14B, 8GB+→7B, 4GB+→3B, 2GB+→0.5B |
 | 自动配置并行线程数  | ✅ 已实现 | cores - 2                        |
 | 操作者可手动覆盖   | ✅ 已实现 | 配置文件可覆盖                          |
 | JVM 内存占用监控 | ✅ 已实现 | totalMemory/freeMemory/maxMemory |
@@ -1219,7 +1225,7 @@ release\MemoryTree\MemoryTree.exe
 - [ ] Ollama 服务已启动（`ollama serve`）
 - [ ] qwen2.5:7b 模型已下载（`ollama pull qwen2.5:7b`）
 - [ ] 网络可访问 localhost:11434
-- [ ] 内存 >= 8GB（推荐 16GB）
+- [ ] 内存 >= 4GB（推荐 8GB+ 跑 7B 模型，有 GPU 可适当降低）
 - [ ] 首次运行会在 `~/.memorytree/` 生成数据目录
 
 ***
