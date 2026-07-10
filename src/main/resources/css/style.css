@@ -167,6 +167,8 @@
     -fx-tab-min-width: 120;
     -fx-open-tab-animation: NONE;
     -fx-close-tab-animation: NONE;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .editor-tabpane .tab-header-background {
@@ -181,8 +183,11 @@
     -fx-padding: 0 20;
     -fx-background-radius: 0;
     -fx-border-color: transparent;
-    -fx-border-width: 2 0 0 0;
+    -fx-border-width: 0;
     -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .editor-tabpane .tab:hover {
@@ -196,6 +201,16 @@
     -fx-border-width: 0;
     -fx-background-insets: 0;
     -fx-border-insets: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.editor-tabpane .tab:focused {
+    -fx-background-color: inherit;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .editor-tabpane .tab-label {
