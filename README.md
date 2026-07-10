@@ -67,51 +67,89 @@
 | 六、接口中立   | 层间仅通过标准接口交互        | ✅ 已实现（TrunkKernel / RLBranch / MemoryBackend 接口）    |
 | 七、契约锚定   | 输出标准由操作者定义的契约书外部锚定 | ✅ 已实现（ContractArbiter + 可编辑 JSON 契约书）               |
 
+### 2.4 运行时边界审计（V3.1）
+
+V3.1 新增运行时边界审计机制，确保系统运行符合设计原则：
+
+| 审计项 | 校验内容 | 阈值 |
+|-------|---------|------|
+| 记忆边界 | 工作记忆容量、热度值范围 | 容量 ≤ 50，热度 ∈ [0, 1] |
+| 内核内存 | JVM 堆内存占用 | ≤ 8GB |
+| 热度衰减 | 衰减率范围 | ∈ [0, 1] |
+| 并行度 | 并行任务数 | ≤ CPU核心数 × 2 |
+
+### 2.5 推理状态流转
+
+```
+IDLE → DRAFT_GENERATE → LOGIC_VALIDATE → [VALID] → OUTPUT
+                                    ↓
+                              [INVALID] → REWRITE → LOGIC_VALIDATE
+```
+
+| 状态 | 描述 | 持续时间 |
+|-----|-----|---------|
+| IDLE | 空闲等待 | 持续到用户触发推理 |
+| DRAFT_GENERATE | 草稿生成 | 取决于模型响应时间 |
+| LOGIC_VALIDATE | 逻辑校验 | 取决于模型响应时间 |
+| REWRITE | 重写修正 | 取决于模型响应时间 |
+| OUTPUT | 输出结果 | 立即 |
+
 ***
 
 ## 三、功能特性
 
 ### 3.1 逻辑推理
 
-- ✅ 内省推理（多轮草稿生成-校验-重写）
-- ✅ 可调温度系数与最大内省轮次
-- ✅ 前提条件注入
-- ✅ 推导树可视化
-- ✅ 逻辑纯度分标注
-- ✅ 三级门控事件记录（Token级修正、逻辑阈值触发、段落重写）
+- ✅ **内省推理**：多轮草稿生成→逻辑校验→契约仲裁→重写修正的完整流程
+- ✅ **可调参数**：温度系数（0.1-1.0）控制推理随机性，最大内省轮次（1-10）限制迭代次数
+- ✅ **前提条件注入**：支持多行前提条件输入，每行一条前提
+- ✅ **推导树可视化**：展示推理过程的层级结构
+- ✅ **逻辑纯度分标注**：实时显示推理结果的逻辑一致性评分
+- ✅ **三级门控事件记录**：Token级修正、逻辑阈值触发、段落重写
+- ✅ **实时状态反馈**：DRAFT_GENERATE → LOGIC_VALIDATE → REWRITE → OUTPUT 状态实时更新
 
 ### 3.2 记忆管理
 
-- ✅ **工作记忆**（意识态）：实时推理上下文，角色设定与推理原则，20MB 容量限制
-- ✅ **持久记忆**（遗产态）：知识库存储，支持关键词搜索
-- ✅ **记忆固化**：自动显著性检测 + 手动固化
-- ✅ **记忆注入**：持久记忆注入工作记忆参与推理
-- ✅ **分页浏览**：大容量记忆分页展示
-- ✅ **详情查看与编辑**：完整记忆属性可查阅可修改
-- ✅ **初始记忆种子**：默认学者与研究者角色记忆
+- ✅ **工作记忆**（意识态）：实时推理上下文，角色设定与推理原则，最大容量 50 条
+- ✅ **持久记忆**（遗产态）：知识库存储，支持关键词搜索和热度排序
+- ✅ **记忆固化**：自动显著性检测（输出熵、推理链一致性、置信度）+ 手动固化
+- ✅ **记忆注入**：持久记忆注入工作记忆参与推理，支持热度衰减（V3.1）
+- ✅ **分页浏览**：大容量记忆分页展示，每页 10 条
+- ✅ **详情查看与编辑**：完整记忆属性（内容、类型、热度、创建时间、固化状态）可查阅可修改
+- ✅ **初始记忆种子**：默认研究者角色记忆（形式逻辑定律、奥卡姆剃刀、可证伪性等）
 
 ### 3.3 树枝管理
 
-- ✅ RL 树枝激活/停用控制
-- ✅ 多树枝并行观察与评估
-- ✅ 动作仲裁机制（加权融合策略）
-- ✅ 默认树枝：逻辑校验枝、谬误检测枝
+- ✅ **RL 树枝激活/停用控制**：独立控制每个树枝的启用状态
+- ✅ **多树枝并行观察与评估**：线程池并行执行多个 RLBranch
+- ✅ **动作仲裁机制**：加权融合策略，支持自定义权重
+- ✅ **默认树枝**：逻辑校验枝（DefaultLogicCheckBranch）、谬误检测枝（FallacyDetectionBranch）
+- ✅ **树冠级并行探索**（V3.0）：多路径并行推理（不同温度参数）+ 最优路径选择
 
 ### 3.4 契约仲裁
 
-- ✅ 契约规则管理（增删改查）
-- ✅ 规则启用/禁用
-- ✅ 推理结果合规性校验
-- ✅ 违规严重程度分级
-- ✅ Fail-Safe 硬边界
-- ✅ 可被操作者直接编辑的 JSON 契约书
+- ✅ **契约规则管理**：增删改查，支持批量导入导出
+- ✅ **规则启用/禁用**：独立控制每条规则的生效状态
+- ✅ **推理结果合规性校验**：基于规则的输出合规性检测
+- ✅ **违规严重程度分级**：minor/major/critical 三级严重程度
+- ✅ **Fail-Safe 硬边界**：违反安全边界规则时立即终止推理
+- ✅ **可编辑 JSON 契约书**：操作者可直接编辑规则内容
+- ✅ **合规分数计算**：基于违反规则的严重程度计算综合合规分数（0-1）
 
 ### 3.5 系统监控
 
-- ✅ 硬件信息实时显示（CPU、内存、占用率、JVM 线程数）
-- ✅ 推理状态机可视化
-- ✅ 推理统计（内省轮次、合规分数、耗时、置信度）
-- ✅ 三级门控事件记录
+- ✅ **硬件信息实时显示**：CPU 核心数、内存大小、CPU 占用率、JVM 堆内存、线程数
+- ✅ **推理状态机可视化**：状态流转实时显示，当前状态高亮
+- ✅ **推理统计**：内省轮次、合规分数、推理耗时（ms）、置信度
+- ✅ **三级门控事件记录**：详细记录推理过程中的修正事件
+- ✅ **运行时边界审计**（V3.1）：设计原则审计 + 边界校验
+
+### 3.6 性能优化（V3.0）
+
+- ✅ **异步流式调用**：`generateAsync()` 支持流式回调，提升响应速度
+- ✅ **推理流水线化**：prefetch→generate→validate 流水线重叠执行
+- ✅ **KV 缓存句柄**（V3.1）：`getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`/`clearKVCache()`
+- ✅ **倒排索引**：`build_index()` 优化记忆检索性能
 
 ***
 
@@ -457,18 +495,28 @@ MemoryTree/
 
 | 功能模块 | 更新内容 | 实现文件 |
 |---------|---------|---------|
-| **全局UI优化** | 统一弹窗样式、控件对齐、深色主题美化 | [style.css](file:///e:/AI/MemoryTree/src/main/resources/css/style.css) |
-| **热度衰减** | `decay_all_heat()` 支持自定义衰减率 | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java)、[FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
+| **全局UI优化** | 统一弹窗样式、控件对齐、深色主题美化、状态面板占比调整为25% | [style.css](file:///e:/AI/MemoryTree/src/main/resources/css/style.css)、[MainWindow.fxml](file:///e:/AI/MemoryTree/src/main/resources/fxml/MainWindow.fxml) |
+| **热度衰减** | `decay_all_heat()` 支持自定义衰减率，记忆热度值范围 [0, 1] | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java)、[FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
 | **KV缓存句柄** | `getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`/`clearKVCache()` | [TrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/TrunkKernel.java)、[OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **运行时边界审计** | 设计原则审计（4项）+ 边界校验（4项） | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
+| **运行时边界审计** | 设计原则审计（4项）+ 边界校验（4项），确保系统运行符合设计原则 | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
 
 **数据结构扩展：**
-- `MemoryEntry` 新增 `heat` 字段（记忆热度值）
+- `MemoryEntry` 新增 `heat` 字段（记忆热度值，范围 [0, 1]）
 
 **UI样式更新：**
 - 新增 `custom-dialog`、`custom-alert` 统一弹窗样式
 - 新增 `form-row`、`form-label`、`form-field`、`form-textarea` 表单布局样式
 - 优化按钮样式（`btn-dialog-ok`、`btn-dialog-cancel`、`btn-alert-ok`）
+- 状态面板布局改为 GridPane，列比例 75% / 25%
+- mini-chip padding 从 2×8 增加到 4×10，避免字体遮挡
+- pane-header 高度从 32px 增加到 38px
+
+**Bug修复：**
+- ✅ 契约仲裁算法修复：逻辑推导和证据支持规则从 AND 改为 OR
+- ✅ 置信度计算修复：从随机值改为基于文本内容计算
+- ✅ 逻辑校验和重写修正状态显示修复：添加实时状态回调机制
+- ✅ 版本号显示修复：V2.1 → V3.1
+- ✅ 重复契约仲裁调用修复：移除多余的仲裁逻辑
 
 ---
 
@@ -479,8 +527,8 @@ MemoryTree/
 | 功能模块 | 更新内容 | 实现文件 |
 |---------|---------|---------|
 | **树冠级并行探索** | 多路径并行推理（不同温度参数）+ 最优路径选择 | [CanopyParallelExplorer.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/CanopyParallelExplorer.java) |
-| **异步流式调用** | `generateAsync()` 支持流式回调 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **推理流水线化** | prefetch→generate→validate 流水线重叠执行 | [InferencePipelineService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/InferencePipelineService.java) |
+| **异步流式调用** | `generateAsync()` 支持流式回调，提升响应速度 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **推理流水线化** | prefetch→generate→validate 流水线重叠执行，提升吞吐量 | [InferencePipelineService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/InferencePipelineService.java) |
 
 **V2.2 补全功能：**
 - `build_index()` 倒排索引重建（优化记忆检索性能）
@@ -753,83 +801,6 @@ release\MemoryTree\MemoryTree.exe
 
 ***
 
-## 十五、版本更新历史
-
-### V3.1（运行时边界审计规范）- 2026-07-10
-
-**核心新增功能：**
-
-| 功能模块 | 更新内容 | 实现文件 |
-|---------|---------|---------|
-| **全局UI优化** | 统一弹窗样式、控件对齐、深色主题美化 | [style.css](file:///e:/AI/MemoryTree/src/main/resources/css/style.css) |
-| **热度衰减** | `decay_all_heat()` 支持自定义衰减率 | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java)、[FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
-| **KV缓存句柄** | `getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`/`clearKVCache()` | [TrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/TrunkKernel.java)、[OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **运行时边界审计** | 设计原则审计（4项）+ 边界校验（4项） | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
-
-**数据结构扩展：**
-- `MemoryEntry` 新增 `heat` 字段（记忆热度值）
-
-**UI样式更新：**
-- 新增 `custom-dialog`、`custom-alert` 统一弹窗样式
-- 新增 `form-row`、`form-label`、`form-field`、`form-textarea` 表单布局样式
-- 优化按钮样式（`btn-dialog-ok`、`btn-dialog-cancel`、`btn-alert-ok`）
-
----
-
-### V3.0（推理流水线架构规范）- 2026-07-10
-
-**核心新增功能：**
-
-| 功能模块 | 更新内容 | 实现文件 |
-|---------|---------|---------|
-| **树冠级并行探索** | 多路径并行推理（不同温度参数）+ 最优路径选择 | [CanopyParallelExplorer.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/CanopyParallelExplorer.java) |
-| **异步流式调用** | `generateAsync()` 支持流式回调 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **推理流水线化** | prefetch→generate→validate 流水线重叠执行 | [InferencePipelineService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/InferencePipelineService.java) |
-
-**V2.2 补全功能：**
-- `build_index()` 倒排索引重建（优化记忆检索性能）
-- `is_in_scope()` 领域范围检查（关键词匹配判断）
-- `saveBranch()` 树枝持久化（JSON格式保存参数）
-- `configure_parallelism()` / `get_parallelism_status()` 并行配置接口
-
-**数据结构扩展：**
-- `ParallelStatusDTO` 并行状态数据结构
-- `GenerateResult` 新增 `content`、`confidence`、`reward`、`metadata` 字段
-
----
-
-### V2.1（认知架构规范）- 2026-07-10
-
-**核心新增功能：**
-
-| 功能模块 | 更新内容 | 实现文件 |
-|---------|---------|---------|
-| **双实例内生自干涉** | 高温生成 + 低温校验的交替执行，多轮内省循环 | [IntrospectiveInferenceService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/IntrospectiveInferenceService.java) |
-| **硬件自适应检测** | CPU核心数、内存大小检测，资源占用实时监控 | [HardwareDetector.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/HardwareDetector.java) |
-| **记忆固化状态机** | 显著性检测（输出熵、推理链一致性、置信度）+ 记忆固化 | [MemoryConsolidationService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryConsolidationService.java) |
-| **多树枝并行评估** | 线程池并行执行多个RLBranch | [ParallelBranchEvaluator.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/ParallelBranchEvaluator.java) |
-| **异步I/O调度** | I/O操作与计算重叠执行 | [AsyncIOScheduler.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/AsyncIOScheduler.java) |
-| **契约仲裁** | 契约规则CRUD、合规校验 | [DefaultContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java) |
-
-**UI更新：**
-- JavaFX桌面EXE应用（jpackage打包）
-- 倒排索引Tab布局改为上下布局
-- 初始记忆种子（学者+研究者角色）
-
----
-
-### V2.0（认知架构规范）- 2026-07-10
-
-**核心架构实现：**
-- 四层架构：树干内核层、强化学习树枝层、记忆后端层、调度控制层
-- 契约仲裁机制（独立于模型的外部校验标准）
-- 内省推理状态机（草稿生成-逻辑校验-输出/重写）
-- 意识生命周期状态机（初始化→运行→终止）
-- Ollama集成（qwen2.5:7b模型）
-- 工作记忆与持久记忆分离
-
-***
-
 ## 十六、许可证
 
 本项目仅供学习与研究使用。
@@ -911,9 +882,3 @@ release\MemoryTree\MemoryTree.exe
 | 契约仲裁（ContractArbiter） | Newell (1990), Wiener (1948) | 外部标准、反馈控制 |
 | 推理状态机（InferenceStateMachine） | Baars (1988) | 全局广播、状态转换 |
 | 调度控制层（SchedulerBus） | SOAR 产生式系统 | 并行调度、异步I/O |
-
-***
-
-## 十八、许可证
-
-本项目仅供学习与研究使用。
