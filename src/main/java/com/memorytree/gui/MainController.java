@@ -633,15 +633,6 @@ public class MainController {
                 violationLabel.setStyle("-fx-text-fill: #f87171;");
                 arbitrationContainer.getChildren().add(violationLabel);
             }
-        } else {
-            ArbitrationResultDTO arb = contractArbiter.validate(result.getText());
-            if (arb != null) {
-                Label statusLabel = new Label("结果: " + formatArbitrationResult(arb.getResult()));
-                statusLabel.setStyle(getArbitrationStyle(arb.getResult()));
-                arbitrationContainer.getChildren().add(statusLabel);
-                arbitrationContainer.getChildren().add(new Label("合规分数: " + String.format("%.2f", arb.getComplianceScore())));
-                arbitrationContainer.getChildren().add(new Label("说明: " + (arb.getExplanation() != null ? arb.getExplanation() : "无")));
-            }
         }
 
         int rounds = result.getIntrospectionRounds() > 0 ? result.getIntrospectionRounds() : 1;
