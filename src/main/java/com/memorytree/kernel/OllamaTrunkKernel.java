@@ -95,8 +95,8 @@ public class OllamaTrunkKernel implements TrunkKernel {
                     .tokens(tokens)
                     .logits(logits)
                     .inferenceTimeMs(endTime - startTime)
-                    .confidenceScore(0.9 + Math.random() * 0.08)
-                    .confidence(0.9 + Math.random() * 0.08)
+                    .confidenceScore(calculateConfidence(generatedText))
+                    .confidence(calculateConfidence(generatedText))
                     .reward(Math.random() * 0.5 + 0.5)
                     .kvCacheUsed(config.isUseKVCache())
                     .build();
@@ -292,6 +292,40 @@ public class OllamaTrunkKernel implements TrunkKernel {
     @Override
     public long getMemoryUsageBytes() {
         return 4L * 1024 * 1024 * 1024;
+    }
+
+    private double calculateConfidence(String text) {
+        if (text == null || text.isEmpty()) {
+            return 0.5;
+        }
+        
+        double score = 0.5;
+        
+        if (text.contains("因此") || text.contains("所以") || text.contains("结论")) {
+            score += 0.1;
+        }
+        if (text.contains("推导") || text.contains("推理") || text.contains("论证")) {
+            score += 0.1;
+        }
+        if (text.contains("根据") || text.contains("基于") || text.contains("证据")) {
+            score += 0.1;
+        }
+        if (text.contains("假设") || text.contains("前提") || text.contains("条件")) {
+            score += 0.05;
+        }
+        if (text.contains("证明") || text.contains("验证")) {
+            score += 0.1;
+        }
+        if (text.length() > 200) {
+            score += 0.05;
+        }
+        
+        String[] sentences = text.split("[。！？;]");
+        if (sentences.length > 3) {
+            score += 0.05;
+        }
+        
+        return Math.min(0.95, Math.max(0.5, score));
     }
 
     private List<String> tokenize(String text) {

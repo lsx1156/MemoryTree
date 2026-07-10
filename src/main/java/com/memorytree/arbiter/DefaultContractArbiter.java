@@ -137,6 +137,26 @@ public class DefaultContractArbiter implements ContractArbiter {
             return false;
         }
         
+        if (clauseName.contains("逻辑推导") || clauseName.contains("推理")) {
+            boolean hasLogicWord = textLower.contains("推导") || textLower.contains("推理") || textLower.contains("结论") 
+                    || textLower.contains("因此") || textLower.contains("所以") || textLower.contains("得出")
+                    || textLower.contains("证明") || textLower.contains("论证") || textLower.contains("分析")
+                    || textLower.contains("推断") || textLower.contains("演绎") || textLower.contains("归纳");
+            return !hasLogicWord;
+        }
+        
+        if (clauseName.contains("证据") || clauseName.contains("支持")) {
+            boolean hasEvidenceWord = textLower.contains("根据") || textLower.contains("基于") || textLower.contains("证据") 
+                    || textLower.contains("前提") || textLower.contains("假设") || textLower.contains("理由")
+                    || textLower.contains("依据") || textLower.contains("数据") || textLower.contains("事实")
+                    || textLower.contains("研究") || textLower.contains("实验") || textLower.contains("观察");
+            return !hasEvidenceWord;
+        }
+        
+        if (clauseName.contains("一致")) {
+            return checkConsistency(textLower);
+        }
+        
         if (rule.contains("不得包含") || rule.contains("不能包含") || rule.contains("不包含")) {
             String forbidden = extractForbiddenWord(rule);
             String[] forbiddenWords = forbidden.split("[、，,\\s]+");
@@ -176,22 +196,6 @@ public class DefaultContractArbiter implements ContractArbiter {
                 }
             }
             return false;
-        }
-        
-        if (clauseName.contains("逻辑推导") || clauseName.contains("推理")) {
-            return !textLower.contains("推导") && !textLower.contains("推理") && !textLower.contains("结论") 
-                    && !textLower.contains("因此") && !textLower.contains("所以") && !textLower.contains("得出")
-                    && !textLower.contains("证明") && !textLower.contains("论证");
-        }
-        
-        if (clauseName.contains("证据") || clauseName.contains("支持")) {
-            return !textLower.contains("根据") && !textLower.contains("基于") && !textLower.contains("证据") 
-                    && !textLower.contains("前提") && !textLower.contains("假设") && !textLower.contains("理由")
-                    && !textLower.contains("依据") && !textLower.contains("数据") && !textLower.contains("事实");
-        }
-        
-        if (clauseName.contains("一致")) {
-            return checkConsistency(textLower);
         }
         
         return false;
