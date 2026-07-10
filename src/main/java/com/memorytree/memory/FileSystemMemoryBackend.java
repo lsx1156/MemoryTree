@@ -4,7 +4,11 @@ import com.memorytree.dto.MemoryEntry;
 import com.memorytree.dto.MemoryQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import java.time.format.DateTimeFormatter;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +31,19 @@ public class FileSystemMemoryBackend implements MemoryBackend {
 
     private final String MEMORY_DIR;
     private final String MEMORY_FILE;
-    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
+    private final ObjectMapper objectMapper = createObjectMapper();
+    
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        JavaTimeModule javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(DATE_TIME_FORMATTER));
+        javaTimeModule.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(DATE_TIME_FORMATTER));
+        mapper.registerModule(javaTimeModule);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
     private List<MemoryEntry> memoryStore = new ArrayList<>();
     private Map<String, List<String>> invertedIndex = new HashMap<>();
     private List<String> scopeKeywords = new ArrayList<>();
@@ -125,10 +141,9 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         for (MemoryEntry entry : defaultMemories) {
             entry.setCreatedAt(java.time.LocalDateTime.now());
             entry.setLastAccessedAt(java.time.LocalDateTime.now());
-            memoryStore.add(entry);
+            entry.setHeat(entry.getSaliencyScore());
+            store(entry);
         }
-        
-        persist();
     }
 
     @Override

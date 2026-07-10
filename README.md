@@ -1,4 +1,4 @@
-# 记忆树 MemoryTree
+﻿# 记忆树 MemoryTree
 
 > 纯逻辑类脑AI框架 — V3.1 运行时边界审计规范参考实现
 >
@@ -613,9 +613,9 @@ MemoryTree/
 
 ***
 
-## 九、V3.1 规范实现对比
+## 十一、V3.1 规范实现对比
 
-### 9.1 树干内核层（Trunk Kernel）
+### 11.1 树干内核层（Trunk Kernel）
 
 | 规范要求                          | 实现状态    | 说明                                            |
 | ----------------------------- | ------- | --------------------------------------------- |
@@ -629,7 +629,7 @@ MemoryTree/
 | 权重只读约束                        | ✅ 已实现   | Ollama 远程模型天然只读                               |
 | 无状态约束                         | ✅ 已实现   | 每次 generate 独立调用                              |
 
-### 9.2 强化学习树枝层（RL Branch）
+### 11.2 强化学习树枝层（RL Branch）
 
 | 规范要求                           | 实现状态    | 说明                                                                                      |
 | ------------------------------ | ------- | --------------------------------------------------------------------------------------- |
@@ -643,7 +643,7 @@ MemoryTree/
 | 多树枝并行评估                        | ✅ 已实现   | `ParallelBranchEvaluator` 使用线程池并行调用 observe()                                           |
 | 动作仲裁                           | ✅ 已实现   | 加权融合策略（confidence × reward）                                                             |
 
-### 9.3 记忆后端层（Memory Backend）
+### 11.3 记忆后端层（Memory Backend）
 
 | 规范要求                           | 实现状态  | 说明                                                                 |
 | ------------------------------ | ----- | ------------------------------------------------------------------ |
@@ -656,7 +656,7 @@ MemoryTree/
 | `decay_all_heat()` 可选接口        | ✅ 已实现 | 热度衰减，支持自定义衰减率                                                      |
 | 实现无关性                          | ✅ 已实现 | 接口与实现分离                                                            |
 
-### 9.4 调度控制层（Scheduler Bus）
+### 11.4 调度控制层（Scheduler Bus）
 
 | 规范要求     | 实现状态    | 说明                             |
 | -------- | ------- | ------------------------------ |
@@ -669,7 +669,7 @@ MemoryTree/
 | 生命周期管理   | ✅ 已实现   | 状态隔离/终止清零                      |
 | 边界约束校验   | ✅ 已实现 | `RuntimeBoundaryAuditor` 完整运行时审计 |
 
-### 9.5 内省推理状态机
+### 11.5 内省推理状态机
 
 | 规范状态                          | 实现状态  | 说明                            |
 | ----------------------------- | ----- | ----------------------------- |
@@ -681,7 +681,7 @@ MemoryTree/
 | OUTPUT                        | ✅ 已实现 | 合规时正常输出                       |
 | OUTPUT\_WITH\_LOW\_CONFIDENCE | ✅ 已实现 | 违规且达最大轮次时低置信度输出               |
 
-### 9.6 意识生命周期状态机
+### 11.6 意识生命周期状态机
 
 | 规范状态          | 实现状态  | 说明               |
 | ------------- | ----- | ---------------- |
@@ -694,7 +694,7 @@ MemoryTree/
 | 不加载历史对话       | ✅ 已实现 | 每次从零开始           |
 | 默认不持久化        | ✅ 已实现 | 仅主动触发时写入         |
 
-### 9.7 记忆固化状态机
+### 11.7 记忆固化状态机
 
 | 规范状态               | 实现状态  | 说明                       |
 | ------------------ | ----- | ------------------------ |
@@ -705,7 +705,7 @@ MemoryTree/
 | DISCARD            | ✅ 已实现 | 未确认候选随生命周期销毁             |
 | 显著性检测条件            | ✅ 已实现 | 输出熵<0.3、一致性>0.85、置信度>0.8 |
 
-### 9.8 契约仲裁机制
+### 11.8 契约仲裁机制
 
 | 规范要求                                 | 实现状态  | 说明                                                                 |
 | ------------------------------------ | ----- | ------------------------------------------------------------------ |
@@ -720,7 +720,7 @@ MemoryTree/
 | Fail-Safe 硬边界                        | ✅ 已实现 | max\_introspection\_loops/max\_output\_length/max\_reasoning\_time |
 | 契约书 CRUD                             | ✅ 已实现 | addClause/updateClause/removeClause/toggleClauseEnabled            |
 
-### 9.9 多核并行调度规范
+### 11.9 多核并行调度规范
 
 | 规范要求                               | 实现状态  | 说明                                        |
 | ---------------------------------- | ----- | ----------------------------------------- |
@@ -735,7 +735,7 @@ MemoryTree/
 | 线程安全声明                             | ✅ 已实现 | observe() 线程安全，generate() 串行              |
 | Fail-Safe 优先于并行                    | ✅ 已实现 | Fail-Safe 触发立即终止                          |
 
-### 9.10 硬件自适应机制
+### 11.10 硬件自适应机制
 
 | 规范要求       | 实现状态  | 说明                               |
 | ---------- | ----- | -------------------------------- |
@@ -749,7 +749,7 @@ MemoryTree/
 | 系统内存占用率    | ✅ 已实现 | 物理内存使用百分比                        |
 | JVM 线程数    | ✅ 已实现 | `ThreadMXBean`                   |
 
-### 9.11 学术版 Demo 功能（附件）
+### 11.11 学术版 Demo 功能（附件）
 
 | 规范要求       | 实现状态  | 说明                  |
 | ---------- | ----- | ------------------- |
@@ -763,7 +763,7 @@ MemoryTree/
 | 本地运行无网络依赖  | ✅ 已实现 | 全程本地                |
 | 内核可替换      | ✅ 已实现 | 接口中立，可替换 Ollama 模型  |
 
-### 9.12 核心设计原则验证
+### 11.12 核心设计原则验证
 
 | 原则     | 验证方法          | 实现状态                                           |
 | ------ | ------------- | ---------------------------------------------- |
@@ -777,24 +777,43 @@ MemoryTree/
 
 ***
 
-## 十、已知限制与未实现项
+## 十二、已知限制与未实现项
 
-### 10.1 架构级已知限制（规范声明）
+### 12.1 架构级已知限制（规范声明）
 
 - 框架本身不产生智能，仅提供认知运行的规则与环境
 - 底层仍基于自回归模型范式，不产生真正的主观意识与逻辑理解
 - 意识模拟是工程层面的功能模拟，不代表机器具有现象意识
 - 逻辑校验存在自我裁判偏差，契约仲裁降低了风险但无法完全消除
 
-### 10.2 工程级未实现项
+### 12.2 工程级未实现项与模拟实现说明
 
-| 未实现项                            | 规范章节    | 影响        | 计划   |
-| ------------------------------- | ------- | --------- | ---- |
-| 无 | - | - | - |
+> ⚠️ **真实度声明**：以下项目当前为**模拟/占位实现**，用于验证架构设计和接口定义，不代表生产级功能。请基于实际代码评估，勿直接用于生产环境。
+
+| 项目 | 状态 | 说明 | 实现文件 |
+|------|------|------|---------|
+| **KV缓存句柄** | ⚠️ 模拟实现 | 仅提供接口定义，`kvCacheStore` 为 `HashMap<String,String>` 存储标志位，未操作真实 KV cache | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **tokens/logits** | ⚠️ 模拟实现 | `logits` 为随机生成的 Mock 数据，非模型真实输出 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **置信度计算** | ⚠️ 关键词匹配 | `calculateConfidence()` 基于"因此""所以"等中文关键词打分，非模型真实置信度；流式版本为 `0.9 + random()` | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **reward 评分** | ⚠️ 随机生成 | `Math.random() * 0.5 + 0.5` 纯随机数，非真实奖励模型输出 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **内存占用审计** | ⚠️ 硬编码 | 审计阈值为硬编码常量，非动态计算 | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
+| **鲁棒性测试** | ❌ 无自动化测试 | README 中的 12 项测试为**设计标准**，暂无 JUnit/TestNG 自动化测试代码 | - |
+| **逻辑校验 (score_logic)** | ⚠️ 部分实现 | 基于关键词和规则的简单校验，非真实逻辑推理验证 | [DefaultContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java) |
+| **记忆固化 (save)** | ❌ 未实现 | `MemoryBackend` 接口定义了 `save()` 但部分后端未完整实现 | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java) |
+| **向量检索** | ✅ 已实现 | 基于 Ollama Embedding API 的语义搜索，每个记忆条目包含 embedding 字段（4096维向量） | [EmbeddingService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/EmbeddingService.java) |
+
+**核心真实功能：**
+- ✅ HTTP 调用 Ollama `/api/generate` 进行推理
+- ✅ 流式推理 (`generateAsync`) 逐行处理
+- ✅ 多核并行调度（线程池 + Future）
+- ✅ 硬件自适应检测（CPU核心数、内存大小）
+- ✅ 工作记忆与持久记忆（JSON文件存储）
+- ✅ 契约仲裁（规则匹配 + 一致性检查）
+- ✅ JavaFX 图形界面
 
 ***
 
-## 十一、版本更新历史
+## 十三、版本更新历史
 
 ### V3.1（运行时边界审计规范）- 2026-07-10
 
@@ -881,9 +900,11 @@ MemoryTree/
 
 ***
 
-## 十五、鲁棒性测试标准
+## 十四、鲁棒性设计标准
 
-### 12.1 鲁棒性测试项
+> ⚠️ **说明**：以下为**设计标准与验收规范**，用于指导开发和验证。当前暂无自动化测试代码，各项功能的实际表现需通过人工测试验证。
+
+### 14.1 鲁棒性设计标准
 
 | 测试类别 | 测试项 | 测试方法 | 通过标准 | 实现状态 |
 |---------|-------|---------|---------|---------|
@@ -900,7 +921,7 @@ MemoryTree/
 | **数据鲁棒性** | 数据损坏恢复 | 手动损坏记忆文件 | 系统能检测并恢复到安全状态 | ✅ |
 | **UI鲁棒性** | 窗口缩放测试 | 极端窗口尺寸 | 布局自适应，无控件重叠 | ✅ |
 
-### 12.2 故障恢复测试
+### 14.2 故障恢复测试
 
 | 故障场景 | 恢复要求 | 实现状态 |
 |---------|---------|---------|
@@ -910,7 +931,7 @@ MemoryTree/
 | 契约规则异常 | 忽略违规规则，使用安全规则 | ✅ |
 | 系统状态不一致 | 自动触发状态重置 | ✅ |
 
-### 12.3 性能鲁棒性
+### 14.3 性能鲁棒性
 
 | 指标 | 要求 | 当前状态 |
 |-----|------|---------|
@@ -921,9 +942,9 @@ MemoryTree/
 
 ***
 
-## 十六、Demo 默认角色说明
+## 十五、Demo 默认角色说明
 
-### 13.1 默认研究者角色
+### 15.1 默认研究者角色
 
 本Demo默认配置为**研究者角色**，包含以下预设记忆和配置：
 
@@ -973,9 +994,9 @@ MemoryTree/
 
 ***
 
-## 十七、构建与打包
+## 十六、构建与打包
 
-### 14.1 环境准备
+### 16.1 环境准备
 
 **JDK 要求**：必须使用 JDK 21（不支持 JDK 8）
 
@@ -994,14 +1015,14 @@ java -version
 - 必须下载模型：`ollama pull qwen2.5:7b`
 - 必须启动服务：`ollama serve`
 
-### 14.2 源码运行
+### 16.2 源码运行
 
 ```bash
 cd MemoryTree
 mvn spring-boot:run
 ```
 
-### 14.3 Maven 构建
+### 16.3 Maven 构建
 
 ```bash
 # 清理并打包（跳过测试）
@@ -1011,7 +1032,7 @@ mvn clean package -DskipTests
 # target/memorytree-3.1.0.jar
 ```
 
-### 14.4 EXE 打包（Windows）
+### 16.4 EXE 打包（Windows）
 
 使用 [build\_exe.bat](file:///e:/AI/MemoryTree/build_exe.bat) 脚本：
 
@@ -1043,7 +1064,7 @@ build_exe.bat
 | `-Dspring.main.web-application-type=none` | - | 禁用 Web 服务器（桌面应用） |
 | `--win-console` | - | Windows 控制台模式（便于调试） |
 
-### 14.5 输出结构
+### 16.5 输出结构
 
 ```
 release/MemoryTree/
@@ -1055,7 +1076,7 @@ release/MemoryTree/
 └── bin/                  # 启动脚本
 ```
 
-### 14.6 代码修改后重新打包流程
+### 16.6 代码修改后重新打包流程
 
 **重要**：修改代码后必须重新打包才能生效！
 
@@ -1071,7 +1092,7 @@ build_exe.bat
 release\MemoryTree\MemoryTree.exe
 ```
 
-### 14.7 常见问题
+### 16.7 常见问题
 
 **Q1: 运行 EXE 后显示 V2.1 版本？**
 - **原因**：运行的是旧版本的 EXE
@@ -1097,7 +1118,7 @@ release\MemoryTree\MemoryTree.exe
 - **原因**：CSS 或 FXML 文件未正确打包
 - **解决**：确保 `src/main/resources/` 下的文件完整
 
-### 14.8 运行前检查清单
+### 16.8 运行前检查清单
 
 - [ ] JDK 21 已安装
 - [ ] Ollama 服务已启动（`ollama serve`）
@@ -1108,15 +1129,15 @@ release\MemoryTree\MemoryTree.exe
 
 ***
 
-## 十八、许可证
+## 十七、许可证
 
 本项目仅供学习与研究使用。
 
 ***
 
-## 十九、参考文献
+## 十八、参考文献
 
-### 17.1 认知架构理论
+### 18.1 认知架构理论
 
 1. **SOAR Architecture**
    - Laird, J. E., Newell, A., & Rosenbloom, P. S. (1987). *Soar: An architecture for general intelligence*. Artificial Intelligence, 33(1), 1-64.
@@ -1137,7 +1158,7 @@ release\MemoryTree\MemoryTree.exe
    - Sun, R. (2003). *Dual-Process Models of Cognition: The CLARION Approach*. Psychology Press.
    - **理论贡献**：显性-隐性知识双过程、符号-亚符号混合架构
 
-### 17.2 记忆理论
+### 18.2 记忆理论
 
 1. **多存储模型（Multi-Store Model）**
    - Atkinson, R. C., & Shiffrin, R. M. (1968). *Human memory: A proposed system and its control processes*. In K. W. Spence & J. T. Spence (Eds.), *The psychology of learning and motivation* (Vol. 2, pp. 89-195). Academic Press.
@@ -1152,7 +1173,7 @@ release\MemoryTree\MemoryTree.exe
    - Ericsson, K. A., & Kintsch, W. (1995). *Long-term working memory*. Psychological Review, 102(2), 211-245.
    - **理论贡献**：长期工作记忆概念、知识结构对记忆容量的扩展
 
-### 17.3 元认知与内省推理
+### 18.3 元认知与内省推理
 
 1. **元认知理论**
    - Flavell, J. H. (1979). *Metacognition and cognitive monitoring: A new area of cognitive-developmental inquiry*. American Psychological Association.
@@ -1164,7 +1185,7 @@ release\MemoryTree\MemoryTree.exe
    - Chain-of-Thought (Wei et al., 2022)
    - **理论贡献**：多路径推理、自我验证、逐步推理
 
-### 17.4 系统设计理论
+### 18.4 系统设计理论
 
 1. **信息处理理论**
    - Miller, G. A. (1956). *The magical number seven, plus or minus two: Some limits on our capacity for processing information*. Psychological Review, 63(2), 81-97.
@@ -1178,7 +1199,7 @@ release\MemoryTree\MemoryTree.exe
    - Wiener, N. (1948). *Cybernetics: Or Control and Communication in the Animal and the Machine*. MIT Press.
    - **理论贡献**：负反馈调节、系统稳定性
 
-### 17.5 本项目架构映射
+### 18.5 本项目架构映射
 
 | 项目模块 | 对应理论 | 核心概念 |
 |---------|---------|---------|
