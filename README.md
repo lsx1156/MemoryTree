@@ -836,9 +836,93 @@ release\MemoryTree\MemoryTree.exe
 
 ***
 
-## 十七、文档参考
+## 十七、参考文献
 
+### 17.1 认知架构理论
+
+1. **SOAR Architecture**
+   - Laird, J. E., Newell, A., & Rosenbloom, P. S. (1987). *Soar: An architecture for general intelligence*. Artificial Intelligence, 33(1), 1-64.
+   - Newell, A. (1990). *Unified Theories of Cognition*. Harvard University Press.
+   - **理论贡献**：工作记忆与产生式记忆分离、问题空间搜索、子目标机制（Impasse & Chunking）
+
+2. **ACT-R Architecture**
+   - Anderson, J. R. (1983). *The Architecture of Cognition*. Harvard University Press.
+   - Anderson, J. R., Bothell, D., Byrne, M. D., Douglass, S., Lebiere, C., & Qin, Y. (2004). *An integrated theory of the mind*. Psychological Review, 111(4), 1036-1060.
+   - **理论贡献**：陈述性记忆（Declarative Memory）与程序性记忆（Procedural Memory）双系统、激活衰减模型、理性分析理论
+
+3. **Global Workspace Theory (GWT)**
+   - Baars, B. J. (1988). *A Cognitive Theory of Consciousness*. Cambridge University Press.
+   - Dehaene, S., & Changeux, J.-P. (2011). *Experimental and theoretical approaches to conscious processing*. Neuron, 70(2), 200-227.
+   - **理论贡献**：意识作为全局广播机制、前意识与意识的区分、模块化并行处理与全局访问的统一
+
+4. **CLARION Architecture**
+   - Sun, R. (2003). *Dual-Process Models of Cognition: The CLARION Approach*. Psychology Press.
+   - **理论贡献**：显性-隐性知识双过程、符号-亚符号混合架构
+
+### 17.2 记忆理论
+
+1. **多存储模型（Multi-Store Model）**
+   - Atkinson, R. C., & Shiffrin, R. M. (1968). *Human memory: A proposed system and its control processes*. In K. W. Spence & J. T. Spence (Eds.), *The psychology of learning and motivation* (Vol. 2, pp. 89-195). Academic Press.
+   - **理论贡献**：感觉记忆→短时记忆→长时记忆的三阶段模型
+
+2. **工作记忆模型（Working Memory Model）**
+   - Baddeley, A. D., & Hitch, G. (1974). *Working memory*. In G. H. Bower (Ed.), *Recent advances in learning and motivation* (Vol. 8, pp. 47-89). Academic Press.
+   - Cowan, N. (2001). *The magical number 4 in short-term memory: A reconsideration of mental storage capacity*. Behavioral and Brain Sciences, 24(1), 87-114.
+   - **理论贡献**：工作记忆作为主动加工平台、中央执行系统+子系统结构、4±1容量限制
+
+3. **记忆巩固理论**
+   - Ericsson, K. A., & Kintsch, W. (1995). *Long-term working memory*. Psychological Review, 102(2), 211-245.
+   - **理论贡献**：长期工作记忆概念、知识结构对记忆容量的扩展
+
+### 17.3 元认知与内省推理
+
+1. **元认知理论**
+   - Flavell, J. H. (1979). *Metacognition and cognitive monitoring: A new area of cognitive-developmental inquiry*. American Psychological Association.
+   - Cox, M. T. (2005). *Metacognition in computational systems: A survey*. Knowledge Engineering Review, 20(3), 219-263.
+   - **理论贡献**：对思考的思考、认知监控与调节
+
+2. **迭代自校正机制**
+   - Self-Consistency (Wang et al., 2022)
+   - Chain-of-Thought (Wei et al., 2022)
+   - **理论贡献**：多路径推理、自我验证、逐步推理
+
+### 17.4 系统设计理论
+
+1. **信息处理理论**
+   - Miller, G. A. (1956). *The magical number seven, plus or minus two: Some limits on our capacity for processing information*. Psychological Review, 63(2), 81-97.
+   - **理论贡献**：7±2容量限制、信息组块化
+
+2. **认知负荷理论**
+   - Sweller, J. (1988). *Cognitive load during problem solving: Effects on learning*. Cognitive Science, 12(2), 257-285.
+   - **理论贡献**：工作记忆容量限制对学习的影响
+
+3. **控制论与反馈机制**
+   - Wiener, N. (1948). *Cybernetics: Or Control and Communication in the Animal and the Machine*. MIT Press.
+   - **理论贡献**：负反馈调节、系统稳定性
+
+### 17.5 本项目架构映射
+
+| 项目模块 | 对应理论 | 核心概念 |
+|---------|---------|---------|
+| 工作记忆（WorkingMemory） | Baddeley & Hitch (1974), Cowan (2001) | 主动加工平台、容量限制 |
+| 持久记忆（MemoryBackend） | Atkinson & Shiffrin (1968) | 长时记忆存储 |
+| 记忆固化（MemoryConsolidationService） | Ericsson & Kintsch (1995) | 长期工作记忆、显著性检测 |
+| 内省推理（IntrospectiveInferenceService） | Flavell (1979), Cox (2005) | 元认知、迭代自校正 |
+| 契约仲裁（ContractArbiter） | Newell (1990), Wiener (1948) | 外部标准、反馈控制 |
+| 推理状态机（InferenceStateMachine） | Baars (1988) | 全局广播、状态转换 |
+| 调度控制层（SchedulerBus） | SOAR 产生式系统 | 并行调度、异步I/O |
+
+***
+
+## 十八、许可证
+
+本项目仅供学习与研究使用。
+
+***
+
+## 十九、文档参考
+
+- 《记忆树 MemoryTree V3.1 运行时边界审计规范》
 - 《记忆树 MemoryTree V3.0 推理流水线架构规范》
 - 《记忆树 MemoryTree V2.1 认知架构规范》
 - 《记忆树 MemoryTree V2.0 认知架构规范》
-- 《记忆树（MemoryTree）纯逻辑类脑AI框架 项目整理》
