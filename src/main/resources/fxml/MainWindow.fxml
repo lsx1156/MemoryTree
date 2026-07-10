@@ -44,7 +44,7 @@
                     <tooltip><Tooltip text="逻辑推理"/></tooltip>
                     <graphic>
                         <StackPane styleClass="side-icon-wrap">
-                            <SVGPath content="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z M12 6v6l4 2" styleClass="side-icon-path"/>
+                            <SVGPath content="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zM12 6l4 4-4 4-4-4 4-4z" styleClass="side-icon-path"/>
                         </StackPane>
                     </graphic>
                 </Button>
@@ -52,7 +52,7 @@
                     <tooltip><Tooltip text="记忆管理"/></tooltip>
                     <graphic>
                         <StackPane styleClass="side-icon-wrap">
-                            <SVGPath content="M3 4h18v16H3V4zm0 6h18M8 6h8M8 14h8" styleClass="side-icon-path"/>
+                            <SVGPath content="M3 4h18v16H3V4zm0 2h18v4H3V6zm0 6h18v4H3v-4zm0 6h18v2H3v-2z" styleClass="side-icon-path"/>
                         </StackPane>
                     </graphic>
                 </Button>
@@ -60,7 +60,7 @@
                     <tooltip><Tooltip text="树枝管理"/></tooltip>
                     <graphic>
                         <StackPane styleClass="side-icon-wrap">
-                            <SVGPath content="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" styleClass="side-icon-path"/>
+                            <SVGPath content="M12 2C7.6 2 4 5.6 4 10c0 2.4 1.1 4.6 2.9 6.1l-1.4 3.3L8 20l4-2 4 2-2.5-0.6-1.4-3.3C18.9 14.6 20 12.4 20 10c0-4.4-3.6-8-8-8zm0 14c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z" styleClass="side-icon-path"/>
                         </StackPane>
                     </graphic>
                 </Button>
@@ -68,7 +68,7 @@
                     <tooltip><Tooltip text="契约仲裁"/></tooltip>
                     <graphic>
                         <StackPane styleClass="side-icon-wrap">
-                            <SVGPath content="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8M16 17H8M10 9H8" styleClass="side-icon-path"/>
+                            <SVGPath content="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" styleClass="side-icon-path"/>
                         </StackPane>
                     </graphic>
                 </Button>

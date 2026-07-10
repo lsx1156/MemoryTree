@@ -102,9 +102,9 @@
 }
 
 .side-icon-path {
-    -fx-fill: #858585;
+    -fx-fill: transparent;
     -fx-stroke: #858585;
-    -fx-stroke-width: 1.5;
+    -fx-stroke-width: 2;
     -fx-stroke-linecap: round;
     -fx-stroke-linejoin: round;
 }
