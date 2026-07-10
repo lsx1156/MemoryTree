@@ -3,6 +3,23 @@
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 格式，
 并采用 [语义化版本](https://semver.org/lang/zh-CN/) 规范。
 
+## [3.1.4] - 2026-07-11
+
+### 新增
+
+- **3 项鲁棒性测试**：
+  - `generate_ollamaUnavailable_throwsRuntimeExceptionWithFriendlyMessage` — 模拟 Ollama 不可用，验证友好异常
+  - `buildRequestJson_superLongInput_doesNotCrash` — 5000 字符超长输入不崩溃
+  - `kvCache_concurrentAccess_noDeadlock` — 10 线程 × 20 轮并发无死锁
+- 测试总数从 55 增至 58，鲁棒性覆盖 8/12 项
+
+### 变更
+
+- README 第十四章鲁棒性表格实事求是更新：6 项 ❌ → ✅，2 项 ❌ → ⚠️，附测试依据说明
+- README 版本号更新至 V3.1.4
+
+---
+
 ## [未发布]
 
 ### 新增

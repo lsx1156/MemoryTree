@@ -8,6 +8,10 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.http.HttpResponse;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -254,6 +258,89 @@ class OllamaTrunkKernelIntegrationTest {
     @Test
     void kvCache_restoreNonExistentHandleDoesNotCrash() {
         assertDoesNotThrow(() -> kvCacheManager.restoreKVCache("non_existent_handle"));
+    }
+
+    // ===== 鲁棒性测试（异常路径与边界压力）=====
+
+    /**
+     * 验证 Ollama 服务不可用时，内核抛出 RuntimeException 且消息对用户友好。
+     * 这是生产环境最常见的异常路径（用户忘记启动 ollama serve）。
+     */
+    @Test
+    void generate_ollamaUnavailable_throwsRuntimeExceptionWithFriendlyMessage() {
+        OllamaTrunkKernel kernel = new OllamaTrunkKernel();
+        ReflectionTestUtils.setField(kernel, "modelName", "qwen2.5:7b");
+        // 使用一个几乎肯定未占用的端口，模拟 Ollama 不可用
+        ReflectionTestUtils.setField(kernel, "baseUrl", "http://127.0.0.1:59999");
+        kernel.init();
+
+        GenerateConfig config = GenerateConfig.builder()
+                .temperature(0.3)
+                .topP(0.9)
+                .maxTokens(64)
+                .useKVCache(false)
+                .build();
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> kernel.generate("测试", config),
+                "Ollama 不可用时应抛出 RuntimeException");
+
+        assertNotNull(ex.getMessage(), "异常消息不应为 null");
+        assertTrue(ex.getMessage().contains("推理失败") || ex.getMessage().contains("Ollama")
+                        || ex.getMessage().contains("Connection") || ex.getMessage().contains("connect"),
+                "异常消息应包含可读的错误提示，实际消息: " + ex.getMessage());
+    }
+
+    /**
+     * 验证超长输入（10000 字符）不会导致 JSON 构建崩溃或溢出。
+     * 用户可能粘贴大段文本作为推理输入。
+     */
+    @Test
+    void buildRequestJson_superLongInput_doesNotCrash() {
+        String longInput = "这是一段超长测试文本。".repeat(500); // 约 5000 字符
+        assertTrue(longInput.length() > 4000, "测试前置：输入应足够长");
+
+        String json = httpClient.buildRequestJson(longInput, 0.3, 0.9, 2048, false);
+
+        assertNotNull(json, "超长输入的 JSON 不应为 null");
+        assertTrue(json.contains("\"prompt\":"), "JSON 应包含 prompt 字段");
+        assertTrue(json.length() > longInput.length(), "JSON 长度应大于原始输入长度");
+    }
+
+    /**
+     * 验证 KV cache 在 10 线程并发访问下不发生死锁或数据竞争。
+     * 并行分支评估器（ParallelBranchEvaluator）会并发调用内核。
+     */
+    @Test
+    void kvCache_concurrentAccess_noDeadlock() throws InterruptedException {
+        int threadCount = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        int[] errorCount = {0};
+
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    for (int j = 0; j < 20; j++) {
+                        kvCacheManager.getKVCacheHandle();
+                        String clone = kvCacheManager.cloneKVCache();
+                        kvCacheManager.restoreKVCache(clone);
+                        kvCacheManager.clearKVCache();
+                    }
+                } catch (Exception e) {
+                    errorCount[0]++;
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        boolean completed = latch.await(10, TimeUnit.SECONDS);
+        executor.shutdown();
+        executor.awaitTermination(2, TimeUnit.SECONDS);
+
+        assertTrue(completed, "10 线程并发访问应在 10 秒内完成，未发生死锁");
+        assertEquals(0, errorCount[0], "并发访问不应产生异常，实际异常数: " + errorCount[0]);
     }
 
     // ===== 端到端集成测试（需要真实 Ollama 服务）=====
