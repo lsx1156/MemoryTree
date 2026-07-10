@@ -68,297 +68,297 @@
     </left>
 
     <center>
-        <TabPane fx:id="mainTabPane" styleClass="editor-tabpane" tabClosingPolicy="UNAVAILABLE">
-            <Tab fx:id="tabInference" text="逻辑推理">
-                <content>
-                    <VBox styleClass="editor-page" spacing="0">
-                        <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
-                            <padding>
-                                <Insets top="8" right="16" bottom="8" left="16"/>
-                            </padding>
-                            <Label text="⚙️" styleClass="tab-icon"/>
-                            <Label text="逻辑推理" styleClass="tab-title"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <HBox spacing="10" alignment="CENTER">
-                                <Label text="温度" styleClass="param-text"/>
-                                <Slider fx:id="temperatureSlider" min="0" max="2" value="0.7" blockIncrement="0.1" prefWidth="100"/>
-                                <Label fx:id="temperatureValueLabel" text="0.7" styleClass="param-value"/>
-                                <Separator orientation="VERTICAL" styleClass="toolbar-sep"/>
-                                <Label text="内省" styleClass="param-text"/>
-                                <Slider fx:id="introspectionSlider" min="1" max="10" value="3" blockIncrement="1" prefWidth="100"/>
-                                <Label fx:id="introspectionValueLabel" text="3" styleClass="param-value"/>
-                                <Separator orientation="VERTICAL" styleClass="toolbar-sep"/>
-                                <Button fx:id="inferenceBtn" text="执行推理" styleClass="btn-run" onAction="#handleInference">
-                                    <graphic><Label text="▶" styleClass="btn-run-icon"/></graphic>
-                                </Button>
+        <HBox spacing="0">
+            <TabPane fx:id="mainTabPane" styleClass="editor-tabpane" tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
+                <Tab fx:id="tabInference" text="逻辑推理">
+                    <content>
+                        <VBox styleClass="editor-page" spacing="0">
+                            <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
+                                <padding>
+                                    <Insets top="8" right="16" bottom="8" left="16"/>
+                                </padding>
+                                <Label text="⚙️" styleClass="tab-icon"/>
+                                <Label text="逻辑推理" styleClass="tab-title"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <HBox spacing="10" alignment="CENTER">
+                                    <Label text="温度" styleClass="param-text"/>
+                                    <Slider fx:id="temperatureSlider" min="0" max="2" value="0.7" blockIncrement="0.1" prefWidth="100"/>
+                                    <Label fx:id="temperatureValueLabel" text="0.7" styleClass="param-value"/>
+                                    <Separator orientation="VERTICAL" styleClass="toolbar-sep"/>
+                                    <Label text="内省" styleClass="param-text"/>
+                                    <Slider fx:id="introspectionSlider" min="1" max="10" value="3" blockIncrement="1" prefWidth="100"/>
+                                    <Label fx:id="introspectionValueLabel" text="3" styleClass="param-value"/>
+                                    <Separator orientation="VERTICAL" styleClass="toolbar-sep"/>
+                                    <Button fx:id="inferenceBtn" text="执行推理" styleClass="btn-run" onAction="#handleInference">
+                                        <graphic><Label text="▶" styleClass="btn-run-icon"/></graphic>
+                                    </Button>
+                                </HBox>
                             </HBox>
-                        </HBox>
 
-                        <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
-                            <VBox styleClass="pane-section input-section" spacing="0">
-                                <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
-                                    <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
-                                    <Label text="📝" styleClass="pane-icon"/>
-                                    <Label text="输入问题" styleClass="pane-title"/>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <Label text="前提条件" styleClass="pane-subtitle"/>
-                                </HBox>
-                                <VBox styleClass="pane-body" spacing="8">
-                                    <padding><Insets top="8" right="12" bottom="10" left="12"/></padding>
-                                    <TextArea fx:id="promptInput" promptText="请输入需要推理的问题..." styleClass="code-textarea" prefRowCount="4"/>
-                                    <TextArea fx:id="premisesInput" promptText="可选：每行一条前提条件..." styleClass="code-textarea-sm" prefRowCount="2"/>
-                                </VBox>
-                            </VBox>
-
-                            <Region styleClass="split-divider-h"/>
-
-                            <VBox styleClass="pane-section output-section" spacing="0" VBox.vgrow="ALWAYS">
-                                <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
-                                    <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
-                                    <Label text="💡" styleClass="pane-icon"/>
-                                    <Label text="推理结果" styleClass="pane-title"/>
-                                    <Label fx:id="resultSubtitle" text="等待推理..." styleClass="pane-subtitle"/>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <HBox spacing="6">
-                                        <Label fx:id="statRoundsLabel" text="内省: 0" styleClass="mini-chip"/>
-                                        <Label fx:id="statTimeLabel" text="0ms" styleClass="mini-chip"/>
-                                        <Label fx:id="statConfidenceLabel" text="置信度: -" styleClass="mini-chip"/>
+                            <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
+                                <VBox styleClass="pane-section input-section" spacing="0">
+                                    <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
+                                        <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
+                                        <Label text="📝" styleClass="pane-icon"/>
+                                        <Label text="输入问题" styleClass="pane-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label text="前提条件" styleClass="pane-subtitle"/>
                                     </HBox>
-                                </HBox>
-                                <VBox styleClass="pane-body" VBox.vgrow="ALWAYS">
-                                    <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
-                                    <TextArea fx:id="resultContent" editable="false" VBox.vgrow="ALWAYS" styleClass="output-textarea"/>
+                                    <VBox styleClass="pane-body" spacing="8">
+                                        <padding><Insets top="8" right="12" bottom="10" left="12"/></padding>
+                                        <TextArea fx:id="promptInput" promptText="请输入需要推理的问题..." styleClass="code-textarea" prefRowCount="4"/>
+                                        <TextArea fx:id="premisesInput" promptText="可选：每行一条前提条件..." styleClass="code-textarea-sm" prefRowCount="2"/>
+                                    </VBox>
+                                </VBox>
+
+                                <Region styleClass="split-divider-h"/>
+
+                                <VBox styleClass="pane-section output-section" spacing="0" VBox.vgrow="ALWAYS">
+                                    <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
+                                        <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
+                                        <Label text="💡" styleClass="pane-icon"/>
+                                        <Label text="推理结果" styleClass="pane-title"/>
+                                        <Label fx:id="resultSubtitle" text="等待推理..." styleClass="pane-subtitle"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <HBox spacing="6">
+                                            <Label fx:id="statRoundsLabel" text="内省: 0" styleClass="mini-chip"/>
+                                            <Label fx:id="statTimeLabel" text="0ms" styleClass="mini-chip"/>
+                                            <Label fx:id="statConfidenceLabel" text="置信度: -" styleClass="mini-chip"/>
+                                        </HBox>
+                                    </HBox>
+                                    <VBox styleClass="pane-body" VBox.vgrow="ALWAYS">
+                                        <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
+                                        <TextArea fx:id="resultContent" editable="false" VBox.vgrow="ALWAYS" styleClass="output-textarea"/>
+                                    </VBox>
                                 </VBox>
                             </VBox>
                         </VBox>
-                    </VBox>
-                </content>
-            </Tab>
+                    </content>
+                </Tab>
 
-            <Tab fx:id="tabMemory" text="记忆管理">
-                <content>
-                    <VBox styleClass="editor-page" spacing="0">
-                        <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
-                            <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-                            <Label text="🗄️" styleClass="tab-icon"/>
-                            <Label text="记忆管理" styleClass="tab-title"/>
-                        </HBox>
-                        <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
-                            <VBox styleClass="pane-section working-section" spacing="0">
-                                <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
-                                    <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
-                                    <Label text="🧠" styleClass="pane-icon"/>
-                                    <Label text="工作记忆" styleClass="pane-title"/>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <Button text="清空" styleClass="btn-tool-sm" onAction="#handleClearWorking"/>
-                                </HBox>
-                                <VBox styleClass="pane-body" spacing="6">
-                                    <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
-                                    <ListView fx:id="workingMemoryList" styleClass="memory-list" prefHeight="120"/>
-                                    <HBox spacing="6" alignment="CENTER">
-                                        <Button text="添加" styleClass="btn-tool-sm" onAction="#handleAddWorking"/>
-                                        <Button text="详情" styleClass="btn-tool-sm" onAction="#handleViewWorking"/>
-                                        <Button text="编辑" styleClass="btn-tool-sm" onAction="#handleEditWorking"/>
-                                        <Button text="移除" styleClass="btn-tool-sm-danger" onAction="#handleRemoveWorking"/>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <Button text="◀" styleClass="btn-page" onAction="#prevWorkingPage" fx:id="workingPrevBtn"/>
-                                        <Label fx:id="workingPageLabel" text="第 1/1 页 (共 0 条)" styleClass="page-label"/>
-                                        <Button text="▶" styleClass="btn-page" onAction="#nextWorkingPage" fx:id="workingNextBtn"/>
-                                    </HBox>
-                                </VBox>
-                            </VBox>
-
-                            <Region styleClass="split-divider-h"/>
-
-                            <VBox styleClass="pane-section persistent-section" spacing="0" VBox.vgrow="ALWAYS">
-                                <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
-                                    <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
-                                    <Label text="📚" styleClass="pane-icon"/>
-                                    <Label text="持久记忆" styleClass="pane-title"/>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <TextField fx:id="memorySearchField" promptText="搜索..." styleClass="search-field" prefWidth="160"/>
-                                </HBox>
-                                <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="6">
-                                    <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
-                                    <ListView fx:id="persistentMemoryList" styleClass="memory-list" VBox.vgrow="ALWAYS"/>
-                                    <HBox spacing="6" alignment="CENTER">
-                                        <Button text="添加" styleClass="btn-tool-sm" onAction="#handleAddPersistent"/>
-                                        <Button text="详情" styleClass="btn-tool-sm" onAction="#handleViewPersistent"/>
-                                        <Button text="编辑" styleClass="btn-tool-sm" onAction="#handleEditPersistent"/>
-                                        <Button text="注入" styleClass="btn-tool-sm" onAction="#handleInjectMemory"/>
-                                        <Button text="删除" styleClass="btn-tool-sm-danger" onAction="#handleDeletePersistent"/>
-                                        <Region HBox.hgrow="ALWAYS"/>
-                                        <Button text="◀" styleClass="btn-page" onAction="#prevPersistentPage" fx:id="persistentPrevBtn"/>
-                                        <Label fx:id="persistentPageLabel" text="第 1/1 页 (共 0 条)" styleClass="page-label"/>
-                                        <Button text="▶" styleClass="btn-page" onAction="#nextPersistentPage" fx:id="persistentNextBtn"/>
-                                    </HBox>
-                                </VBox>
-                            </VBox>
-                        </VBox>
-                    </VBox>
-                </content>
-            </Tab>
-
-            <Tab fx:id="tabBranches" text="树枝管理">
-                <content>
-                    <VBox styleClass="editor-page" spacing="0">
-                        <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
-                            <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-                            <Label text="🌿" styleClass="tab-icon"/>
-                            <Label text="树枝管理" styleClass="tab-title"/>
-                        </HBox>
-                        <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="12">
-                            <padding><Insets top="16" right="24" bottom="24" left="24"/></padding>
-                            <Label text="RL 树枝列表" styleClass="section-title"/>
-                            <ListView fx:id="branchListView" styleClass="list-view" VBox.vgrow="ALWAYS"/>
-                            <HBox spacing="10" alignment="CENTER">
-                                <Label text="树枝名称" styleClass="form-label"/>
-                                <TextField fx:id="branchNameField" promptText="树枝名称" styleClass="text-field" prefWidth="200"/>
-                                <Label text="类型" styleClass="form-label"/>
-                                <TextField fx:id="branchTypeField" promptText="类型" styleClass="text-field" prefWidth="140"/>
-                                <Button text="添加树枝" styleClass="btn-primary-sm" onAction="#handleAddBranch"/>
-                                <Button text="激活/停用" styleClass="btn-primary-sm" onAction="#handleToggleBranch"/>
-                                <Button text="删除" styleClass="btn-danger" onAction="#handleDeleteBranch"/>
+                <Tab fx:id="tabMemory" text="记忆管理">
+                    <content>
+                        <VBox styleClass="editor-page" spacing="0">
+                            <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
+                                <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
+                                <Label text="🗄️" styleClass="tab-icon"/>
+                                <Label text="记忆管理" styleClass="tab-title"/>
                             </HBox>
-                        </VBox>
-                    </VBox>
-                </content>
-            </Tab>
+                            <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
+                                <VBox styleClass="pane-section working-section" spacing="0">
+                                    <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
+                                        <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
+                                        <Label text="🧠" styleClass="pane-icon"/>
+                                        <Label text="工作记忆" styleClass="pane-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button text="清空" styleClass="btn-tool-sm" onAction="#handleClearWorking"/>
+                                    </HBox>
+                                    <VBox styleClass="pane-body" spacing="6">
+                                        <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
+                                        <ListView fx:id="workingMemoryList" styleClass="memory-list" prefHeight="120"/>
+                                        <HBox spacing="6" alignment="CENTER">
+                                            <Button text="添加" styleClass="btn-tool-sm" onAction="#handleAddWorking"/>
+                                            <Button text="详情" styleClass="btn-tool-sm" onAction="#handleViewWorking"/>
+                                            <Button text="编辑" styleClass="btn-tool-sm" onAction="#handleEditWorking"/>
+                                            <Button text="移除" styleClass="btn-tool-sm-danger" onAction="#handleRemoveWorking"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                            <Button text="◀" styleClass="btn-page" onAction="#prevWorkingPage" fx:id="workingPrevBtn"/>
+                                            <Label fx:id="workingPageLabel" text="第 1/1 页 (共 0 条)" styleClass="page-label"/>
+                                            <Button text="▶" styleClass="btn-page" onAction="#nextWorkingPage" fx:id="workingNextBtn"/>
+                                        </HBox>
+                                    </VBox>
+                                </VBox>
 
-            <Tab fx:id="tabContract" text="契约仲裁">
-                <content>
-                    <VBox styleClass="editor-page" spacing="0">
-                        <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
-                            <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-                            <Label text="📜" styleClass="tab-icon"/>
-                            <Label text="契约仲裁" styleClass="tab-title"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Button text="添加规则" styleClass="btn-primary-sm" onAction="#handleAddContractRule"/>
-                        </HBox>
-                        <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="12">
-                            <padding><Insets top="16" right="24" bottom="24" left="24"/></padding>
-                            <Label text="契约规则列表" styleClass="section-title"/>
-                            <VBox fx:id="contractRulesContainer" spacing="6" VBox.vgrow="ALWAYS" styleClass="contract-list"/>
+                                <Region styleClass="split-divider-h"/>
+
+                                <VBox styleClass="pane-section persistent-section" spacing="0" VBox.vgrow="ALWAYS">
+                                    <HBox styleClass="pane-header" alignment="CENTER_LEFT" spacing="8">
+                                        <padding><Insets top="6" right="12" bottom="6" left="12"/></padding>
+                                        <Label text="📚" styleClass="pane-icon"/>
+                                        <Label text="持久记忆" styleClass="pane-title"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <TextField fx:id="memorySearchField" promptText="搜索..." styleClass="search-field" prefWidth="160"/>
+                                    </HBox>
+                                    <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="6">
+                                        <padding><Insets top="8" right="12" bottom="12" left="12"/></padding>
+                                        <ListView fx:id="persistentMemoryList" styleClass="memory-list" VBox.vgrow="ALWAYS"/>
+                                        <HBox spacing="6" alignment="CENTER">
+                                            <Button text="添加" styleClass="btn-tool-sm" onAction="#handleAddPersistent"/>
+                                            <Button text="详情" styleClass="btn-tool-sm" onAction="#handleViewPersistent"/>
+                                            <Button text="编辑" styleClass="btn-tool-sm" onAction="#handleEditPersistent"/>
+                                            <Button text="注入" styleClass="btn-tool-sm" onAction="#handleInjectMemory"/>
+                                            <Button text="删除" styleClass="btn-tool-sm-danger" onAction="#handleDeletePersistent"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                            <Button text="◀" styleClass="btn-page" onAction="#prevPersistentPage" fx:id="persistentPrevBtn"/>
+                                            <Label fx:id="persistentPageLabel" text="第 1/1 页 (共 0 条)" styleClass="page-label"/>
+                                            <Button text="▶" styleClass="btn-page" onAction="#nextPersistentPage" fx:id="persistentNextBtn"/>
+                                        </HBox>
+                                    </VBox>
+                                </VBox>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <Tab fx:id="tabBranches" text="树枝管理">
+                    <content>
+                        <VBox styleClass="editor-page" spacing="0">
+                            <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
+                                <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
+                                <Label text="🌿" styleClass="tab-icon"/>
+                                <Label text="树枝管理" styleClass="tab-title"/>
+                            </HBox>
+                            <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="12">
+                                <padding><Insets top="16" right="24" bottom="24" left="24"/></padding>
+                                <Label text="RL 树枝列表" styleClass="section-title"/>
+                                <ListView fx:id="branchListView" styleClass="list-view" VBox.vgrow="ALWAYS"/>
+                                <HBox spacing="10" alignment="CENTER">
+                                    <Label text="树枝名称" styleClass="form-label"/>
+                                    <TextField fx:id="branchNameField" promptText="树枝名称" styleClass="text-field" prefWidth="200"/>
+                                    <Label text="类型" styleClass="form-label"/>
+                                    <TextField fx:id="branchTypeField" promptText="类型" styleClass="text-field" prefWidth="140"/>
+                                    <Button text="添加树枝" styleClass="btn-primary-sm" onAction="#handleAddBranch"/>
+                                    <Button text="激活/停用" styleClass="btn-primary-sm" onAction="#handleToggleBranch"/>
+                                    <Button text="删除" styleClass="btn-danger" onAction="#handleDeleteBranch"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <Tab fx:id="tabContract" text="契约仲裁">
+                    <content>
+                        <VBox styleClass="editor-page" spacing="0">
+                            <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
+                                <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
+                                <Label text="📜" styleClass="tab-icon"/>
+                                <Label text="契约仲裁" styleClass="tab-title"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="添加规则" styleClass="btn-primary-sm" onAction="#handleAddContractRule"/>
+                            </HBox>
+                            <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="12">
+                                <padding><Insets top="16" right="24" bottom="24" left="24"/></padding>
+                                <Label text="契约规则列表" styleClass="section-title"/>
+                                <VBox fx:id="contractRulesContainer" spacing="6" VBox.vgrow="ALWAYS" styleClass="contract-list"/>
+                            </VBox>
+                        </VBox>
+                    </content>
+                </Tab>
+            </TabPane>
+
+            <VBox styleClass="sidebar-right" spacing="0" VBox.vgrow="ALWAYS" style="-fx-pref-width: 25%; -fx-max-width: 25%;">
+                <HBox styleClass="right-header" alignment="CENTER_LEFT" spacing="8">
+                    <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
+                    <Label text="🛠" styleClass="right-icon"/>
+                    <Label text="状态面板" styleClass="right-title"/>
+                </HBox>
+
+                <ScrollPane fitToWidth="true" styleClass="right-scroll" VBox.vgrow="ALWAYS">
+                    <VBox spacing="12">
+                        <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+
+                        <VBox styleClass="right-card" spacing="8">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="🔄" style="-fx-font-size: 14;"/>
+                                <Label text="推理状态机" styleClass="right-card-title"/>
+                            </HBox>
+                            <VBox spacing="6">
+                                <HBox fx:id="stateIdle" styleClass="state-row">
+                                    <Region styleClass="state-dot idle-dot"/>
+                                    <VBox>
+                                        <Label text="IDLE" styleClass="state-name"/>
+                                        <Label text="空闲等待" styleClass="state-desc"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox fx:id="stateDraft" styleClass="state-row">
+                                    <Region styleClass="state-dot"/>
+                                    <VBox>
+                                        <Label text="DRAFT_GENERATE" styleClass="state-name"/>
+                                        <Label text="草稿生成" styleClass="state-desc"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox fx:id="stateValidate" styleClass="state-row">
+                                    <Region styleClass="state-dot"/>
+                                    <VBox>
+                                        <Label text="LOGIC_VALIDATE" styleClass="state-name"/>
+                                        <Label text="逻辑校验" styleClass="state-desc"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox fx:id="stateRewrite" styleClass="state-row">
+                                    <Region styleClass="state-dot"/>
+                                    <VBox>
+                                        <Label text="REWRITE" styleClass="state-name"/>
+                                        <Label text="重写修正" styleClass="state-desc"/>
+                                    </VBox>
+                                </HBox>
+                                <HBox fx:id="stateOutput" styleClass="state-row">
+                                    <Region styleClass="state-dot"/>
+                                    <VBox>
+                                        <Label text="OUTPUT" styleClass="state-name"/>
+                                        <Label text="输出结果" styleClass="state-desc"/>
+                                    </VBox>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+
+                        <VBox styleClass="right-card" spacing="8">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="🌲" style="-fx-font-size: 14;"/>
+                                <Label text="推导树" styleClass="right-card-title"/>
+                            </HBox>
+                            <ListView fx:id="derivationTreeView" styleClass="derivation-list" prefHeight="120"/>
+                        </VBox>
+
+                        <VBox styleClass="right-card" spacing="8">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="🛡️" style="-fx-font-size: 14;"/>
+                                <Label text="契约仲裁结果" styleClass="right-card-title"/>
+                            </HBox>
+                            <VBox fx:id="arbitrationContainer" spacing="4" styleClass="arb-result-box">
+                                <Label text="暂无仲裁结果" style="-fx-text-fill: #6e7681; -fx-font-size: 12;"/>
+                            </VBox>
+                        </VBox>
+
+                        <VBox styleClass="right-card" spacing="8">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="🧠" style="-fx-font-size: 14;"/>
+                                <Label text="记忆状态" styleClass="right-card-title"/>
+                            </HBox>
+                            <GridPane hgap="8" vgap="4">
+                                <Label text="工作记忆" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <Label fx:id="workingMemorySizeLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                <Label text="持久记忆" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <Label fx:id="persistentMemoryCountLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <Label text="活跃树枝" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <Label fx:id="activeBranchCountLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            </GridPane>
+                        </VBox>
+
+                        <VBox styleClass="right-card" spacing="8">
+                            <HBox alignment="CENTER_LEFT" spacing="6">
+                                <Label text="⚙️" style="-fx-font-size: 14;"/>
+                                <Label text="硬件信息" styleClass="right-card-title"/>
+                            </HBox>
+                            <GridPane hgap="8" vgap="4">
+                                <Label text="CPU" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <Label fx:id="hardwareCpuLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                <Label text="CPU占用" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <Label fx:id="hardwareCpuUsageLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                                <Label text="内存" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <Label fx:id="hardwareMemoryLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                                <Label text="系统占用" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                <Label fx:id="hardwareMemoryUsageLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                                <Label text="JVM占用" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                <Label fx:id="hardwareJvmUsageLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                <Label text="推荐模型" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                                <Label fx:id="hardwareModelLabel" text="-" styleClass="right-value-accent" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                                <Label text="线程数" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+                                <Label fx:id="hardwareThreadLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                            </GridPane>
                         </VBox>
                     </VBox>
-                </content>
-            </Tab>
-        </TabPane>
+                </ScrollPane>
+            </VBox>
+        </HBox>
     </center>
-
-    <right>
-        <VBox styleClass="sidebar-right" prefWidth="280" spacing="0" VBox.vgrow="ALWAYS">
-            <HBox styleClass="right-header" alignment="CENTER_LEFT" spacing="8">
-                <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
-                <Label text="🛠" styleClass="right-icon"/>
-                <Label text="状态面板" styleClass="right-title"/>
-            </HBox>
-
-            <ScrollPane fitToWidth="true" styleClass="right-scroll" VBox.vgrow="ALWAYS">
-                <VBox spacing="12">
-                    <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
-
-                    <VBox styleClass="right-card" spacing="8">
-                        <HBox alignment="CENTER_LEFT" spacing="6">
-                            <Label text="🔄" style="-fx-font-size: 14;"/>
-                            <Label text="推理状态机" styleClass="right-card-title"/>
-                        </HBox>
-                        <VBox spacing="6">
-                            <HBox fx:id="stateIdle" styleClass="state-row">
-                                <Region styleClass="state-dot idle-dot"/>
-                                <VBox>
-                                    <Label text="IDLE" styleClass="state-name"/>
-                                    <Label text="空闲等待" styleClass="state-desc"/>
-                                </VBox>
-                            </HBox>
-                            <HBox fx:id="stateDraft" styleClass="state-row">
-                                <Region styleClass="state-dot"/>
-                                <VBox>
-                                    <Label text="DRAFT_GENERATE" styleClass="state-name"/>
-                                    <Label text="草稿生成" styleClass="state-desc"/>
-                                </VBox>
-                            </HBox>
-                            <HBox fx:id="stateValidate" styleClass="state-row">
-                                <Region styleClass="state-dot"/>
-                                <VBox>
-                                    <Label text="LOGIC_VALIDATE" styleClass="state-name"/>
-                                    <Label text="逻辑校验" styleClass="state-desc"/>
-                                </VBox>
-                            </HBox>
-                            <HBox fx:id="stateRewrite" styleClass="state-row">
-                                <Region styleClass="state-dot"/>
-                                <VBox>
-                                    <Label text="REWRITE" styleClass="state-name"/>
-                                    <Label text="重写修正" styleClass="state-desc"/>
-                                </VBox>
-                            </HBox>
-                            <HBox fx:id="stateOutput" styleClass="state-row">
-                                <Region styleClass="state-dot"/>
-                                <VBox>
-                                    <Label text="OUTPUT" styleClass="state-name"/>
-                                    <Label text="输出结果" styleClass="state-desc"/>
-                                </VBox>
-                            </HBox>
-                        </VBox>
-                    </VBox>
-
-                    <VBox styleClass="right-card" spacing="8">
-                        <HBox alignment="CENTER_LEFT" spacing="6">
-                            <Label text="🌲" style="-fx-font-size: 14;"/>
-                            <Label text="推导树" styleClass="right-card-title"/>
-                        </HBox>
-                        <ListView fx:id="derivationTreeView" styleClass="derivation-list" prefHeight="120"/>
-                    </VBox>
-
-                    <VBox styleClass="right-card" spacing="8">
-                        <HBox alignment="CENTER_LEFT" spacing="6">
-                            <Label text="🛡️" style="-fx-font-size: 14;"/>
-                            <Label text="契约仲裁结果" styleClass="right-card-title"/>
-                        </HBox>
-                        <VBox fx:id="arbitrationContainer" spacing="4" styleClass="arb-result-box">
-                            <Label text="暂无仲裁结果" style="-fx-text-fill: #6e7681; -fx-font-size: 12;"/>
-                        </VBox>
-                    </VBox>
-
-                    <VBox styleClass="right-card" spacing="8">
-                        <HBox alignment="CENTER_LEFT" spacing="6">
-                            <Label text="🧠" style="-fx-font-size: 14;"/>
-                            <Label text="记忆状态" styleClass="right-card-title"/>
-                        </HBox>
-                        <GridPane hgap="8" vgap="4">
-                            <Label text="工作记忆" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                            <Label fx:id="workingMemorySizeLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                            <Label text="持久记忆" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                            <Label fx:id="persistentMemoryCountLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                            <Label text="活跃树枝" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                            <Label fx:id="activeBranchCountLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        </GridPane>
-                    </VBox>
-
-                    <VBox styleClass="right-card" spacing="8">
-                        <HBox alignment="CENTER_LEFT" spacing="6">
-                            <Label text="⚙️" style="-fx-font-size: 14;"/>
-                            <Label text="硬件信息" styleClass="right-card-title"/>
-                        </HBox>
-                        <GridPane hgap="8" vgap="4">
-                            <Label text="CPU" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                            <Label fx:id="hardwareCpuLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                            <Label text="CPU占用" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                            <Label fx:id="hardwareCpuUsageLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                            <Label text="内存" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                            <Label fx:id="hardwareMemoryLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                            <Label text="系统占用" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                            <Label fx:id="hardwareMemoryUsageLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                            <Label text="JVM占用" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                            <Label fx:id="hardwareJvmUsageLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                            <Label text="推荐模型" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                            <Label fx:id="hardwareModelLabel" text="-" styleClass="right-value-accent" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                            <Label text="线程数" styleClass="right-label" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
-                            <Label fx:id="hardwareThreadLabel" text="-" styleClass="right-value" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-                        </GridPane>
-                    </VBox>
-                </VBox>
-            </ScrollPane>
-        </VBox>
-    </right>
 </BorderPane>

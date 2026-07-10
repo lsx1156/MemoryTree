@@ -131,12 +131,13 @@ public class DefaultContractArbiter implements ContractArbiter {
     private boolean checkClause(String text, ContractClause clause) {
         String rule = clause.getRule().toLowerCase();
         String textLower = text.toLowerCase();
+        String clauseName = clause.getName().toLowerCase();
         
         if (!clause.isEnabled()) {
             return false;
         }
         
-        if (rule.contains("不得包含")) {
+        if (rule.contains("不得包含") || rule.contains("不能包含") || rule.contains("不包含")) {
             String forbidden = extractForbiddenWord(rule);
             String[] forbiddenWords = forbidden.split("[、，,\\s]+");
             for (String word : forbiddenWords) {
@@ -148,7 +149,7 @@ public class DefaultContractArbiter implements ContractArbiter {
             return false;
         }
         
-        if (rule.contains("必须包含")) {
+        if (rule.contains("必须包含") || rule.contains("应当包含") || rule.contains("需要包含")) {
             String required = extractRequiredWord(rule);
             String[] requiredWords = required.split("[、，,\\s]+");
             boolean found = false;
@@ -174,33 +175,67 @@ public class DefaultContractArbiter implements ContractArbiter {
                     }
                 }
             }
-        }
-        
-        if (rule.contains("逻辑推导")) {
-            return !textLower.contains("推导") && !textLower.contains("推理") && !textLower.contains("结论") 
-                    && !textLower.contains("因此") && !textLower.contains("所以") && !textLower.contains("得出");
-        }
-        
-        if (rule.contains("证据") || rule.contains("支持")) {
-            return !textLower.contains("根据") && !textLower.contains("基于") && !textLower.contains("证据") 
-                    && !textLower.contains("前提") && !textLower.contains("假设") && !textLower.contains("理由");
-        }
-        
-        if (rule.contains("一致")) {
             return false;
+        }
+        
+        if (clauseName.contains("逻辑推导") || clauseName.contains("推理")) {
+            return !textLower.contains("推导") && !textLower.contains("推理") && !textLower.contains("结论") 
+                    && !textLower.contains("因此") && !textLower.contains("所以") && !textLower.contains("得出")
+                    && !textLower.contains("证明") && !textLower.contains("论证");
+        }
+        
+        if (clauseName.contains("证据") || clauseName.contains("支持")) {
+            return !textLower.contains("根据") && !textLower.contains("基于") && !textLower.contains("证据") 
+                    && !textLower.contains("前提") && !textLower.contains("假设") && !textLower.contains("理由")
+                    && !textLower.contains("依据") && !textLower.contains("数据") && !textLower.contains("事实");
+        }
+        
+        if (clauseName.contains("一致")) {
+            return checkConsistency(textLower);
         }
         
         return false;
     }
+    
+    private boolean checkConsistency(String text) {
+        int contradictionCount = 0;
+        
+        if (text.contains("不是") && text.contains("是")) {
+            contradictionCount++;
+        }
+        if (text.contains("没有") && text.contains("有")) {
+            contradictionCount++;
+        }
+        if (text.contains("不可能") && text.contains("可能")) {
+            contradictionCount++;
+        }
+        if (text.contains("不存在") && text.contains("存在")) {
+            contradictionCount++;
+        }
+        
+        return contradictionCount >= 2;
+    }
 
     private String extractForbiddenWord(String rule) {
-        int idx = rule.indexOf("不得包含") + 4;
-        return rule.substring(idx).trim();
+        if (rule.contains("不得包含")) {
+            return rule.substring(rule.indexOf("不得包含") + 4).trim();
+        } else if (rule.contains("不能包含")) {
+            return rule.substring(rule.indexOf("不能包含") + 4).trim();
+        } else if (rule.contains("不包含")) {
+            return rule.substring(rule.indexOf("不包含") + 3).trim();
+        }
+        return rule;
     }
 
     private String extractRequiredWord(String rule) {
-        int idx = rule.indexOf("必须包含") + 4;
-        return rule.substring(idx).trim();
+        if (rule.contains("必须包含")) {
+            return rule.substring(rule.indexOf("必须包含") + 4).trim();
+        } else if (rule.contains("应当包含")) {
+            return rule.substring(rule.indexOf("应当包含") + 4).trim();
+        } else if (rule.contains("需要包含")) {
+            return rule.substring(rule.indexOf("需要包含") + 4).trim();
+        }
+        return rule;
     }
 
     private String buildExplanation(ArbitrationResult result, List<String> matchedRules, double complianceScore) {
