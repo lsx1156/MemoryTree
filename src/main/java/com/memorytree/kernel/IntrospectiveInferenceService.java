@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @Service
@@ -32,6 +33,15 @@ public class IntrospectiveInferenceService {
                                                         int maxIntrospectionRounds, 
                                                         double generateTemperature,
                                                         double validateTemperature) {
+        return performIntrospectiveInference(prompt, premises, maxIntrospectionRounds, 
+                generateTemperature, validateTemperature, null);
+    }
+
+    public GenerateResult performIntrospectiveInference(String prompt, String premises, 
+                                                        int maxIntrospectionRounds, 
+                                                        double generateTemperature,
+                                                        double validateTemperature,
+                                                        Consumer<String> stateCallback) {
         List<IntrospectionRecord> records = new ArrayList<>();
         List<GatingEvent> gatingEvents = new ArrayList<>();
         GenerateResult currentResult = null;
@@ -76,6 +86,10 @@ public class IntrospectiveInferenceService {
                     
                     log.info("Draft generated in {}ms", currentResult.getInferenceTimeMs());
                 }
+                
+                if (stateCallback != null) {
+                    stateCallback.accept("DRAFT_GENERATE");
+                }
             }
 
             record.setAction("LOGIC_VALIDATE");
@@ -100,6 +114,10 @@ public class IntrospectiveInferenceService {
 
             log.info("Validation result: valid={}, confidence={}, issues={}", 
                     analysis.isValid(), analysis.getConfidence(), analysis.getIssues());
+
+            if (stateCallback != null) {
+                stateCallback.accept("LOGIC_VALIDATE");
+            }
 
             if (analysis.isValid()) {
                 record.setAction("OUTPUT");
@@ -134,6 +152,11 @@ public class IntrospectiveInferenceService {
                 record.setRewriteTimeMs(currentResult.getInferenceTimeMs());
 
                 log.info("Rewrite performed in {}ms", currentResult.getInferenceTimeMs());
+                
+                if (stateCallback != null) {
+                    stateCallback.accept("REWRITE");
+                }
+                
                 records.add(record);
             } else {
                 record.setFinal(true);

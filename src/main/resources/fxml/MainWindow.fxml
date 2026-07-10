@@ -23,7 +23,7 @@
             <VBox>
                 <Label text="记忆树 MemoryTree" styleClass="app-title"/>
             </VBox>
-            <Label text="V2.1" styleClass="version-tag"/>
+            <Label fx:id="versionLabel" text="V3.1" styleClass="version-tag"/>
             <Region HBox.hgrow="ALWAYS"/>
             <HBox spacing="8">
                 <StackPane styleClass="status-dot running"/>
@@ -68,12 +68,12 @@
     </left>
 
     <center>
-        <GridPane>
+        <GridPane hgap="0" vgap="0">
             <columnConstraints>
                 <ColumnConstraints percentWidth="75" hgrow="ALWAYS"/>
                 <ColumnConstraints percentWidth="25" hgrow="NEVER"/>
             </columnConstraints>
-            <TabPane fx:id="mainTabPane" styleClass="editor-tabpane" tabClosingPolicy="UNAVAILABLE" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <TabPane fx:id="mainTabPane" styleClass="editor-tabpane" tabClosingPolicy="UNAVAILABLE" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
                 <Tab fx:id="tabInference" text="逻辑推理">
                     <content>
                         <VBox styleClass="editor-page" spacing="0">
@@ -250,7 +250,7 @@
                 </Tab>
             </TabPane>
 
-            <VBox styleClass="sidebar-right" spacing="0" VBox.vgrow="ALWAYS" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <VBox styleClass="sidebar-right" spacing="0" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="NEVER" GridPane.vgrow="ALWAYS">
                 <HBox styleClass="right-header" alignment="CENTER_LEFT" spacing="8">
                     <padding><Insets top="8" right="12" bottom="8" left="12"/></padding>
                     <Label text="🛠" styleClass="right-icon"/>

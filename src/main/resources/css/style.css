@@ -413,9 +413,6 @@
     -fx-border-color: #333;
     -fx-border-width: 0 0 0 1;
     -fx-spacing: 0;
-    -fx-pref-width: 25%;
-    -fx-max-width: 25%;
-    -fx-min-width: 200;
 }
 
 .right-header {

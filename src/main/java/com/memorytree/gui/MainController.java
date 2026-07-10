@@ -77,6 +77,9 @@ public class MainController {
     private Label systemStatusLabel;
 
     @FXML
+    private Label versionLabel;
+
+    @FXML
     private Button resetMemoryBtn;
 
     @FXML
@@ -240,6 +243,8 @@ public class MainController {
 
     @FXML
     public void initialize() {
+        versionLabel.setText("V3.1");
+        
         temperatureSlider.valueProperty().addListener((obs, old, val) -> 
             temperatureValueLabel.setText(String.format("%.1f", val.doubleValue())));
         
@@ -455,7 +460,23 @@ public class MainController {
                 GenerateResult result = null;
                 try {
                     result = introspectiveInferenceService.performIntrospectiveInference(
-                            prompt, premises, introspectionRounds, temperature, 0.1);
+                            prompt, premises, introspectionRounds, temperature, 0.1,
+                            state -> {
+                                Platform.runLater(() -> {
+                                    switch (state) {
+                                        case "DRAFT_GENERATE":
+                                            setState("draft", "completed");
+                                            setState("validate", "active");
+                                            break;
+                                        case "LOGIC_VALIDATE":
+                                            setState("validate", "completed");
+                                            break;
+                                        case "REWRITE":
+                                            setState("rewrite", "active");
+                                            break;
+                                    }
+                                });
+                            });
                 } catch (Exception ex) {
                     log.error("[推理] 内省推理失败: {}", ex.getMessage(), ex);
                     throw new RuntimeException("内省推理失败: " + (ex.getMessage() != null ? ex.getMessage() : ex.getClass().getName()), ex);
@@ -486,19 +507,6 @@ public class MainController {
                 final GenerateResult finalResult = result;
 
                 Platform.runLater(() -> {
-                    setState("draft", "completed");
-                    setState("validate", "active");
-                    setState("validate", "completed");
-
-                    if (finalResult != null && finalResult.getIntrospectionRecords() != null) {
-                        for (IntrospectionRecord record : finalResult.getIntrospectionRecords()) {
-                            if ("REWRITE".equals(record.getAction())) {
-                                setState("rewrite", "active");
-                                setState("rewrite", "completed");
-                            }
-                        }
-                    }
-
                     setState("output", "active");
 
                     displayResult(finalResult);
