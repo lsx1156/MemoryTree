@@ -96,8 +96,22 @@
     -fx-border-width: 2 0 0 0;
 }
 
-.side-icon-btn .label {
+.side-icon-btn .label,
+.side-icon-btn .svg-path {
     -fx-text-fill: #858585;
+}
+
+.side-icon-path {
+    -fx-fill: #858585;
+    -fx-stroke: #858585;
+    -fx-stroke-width: 1.5;
+    -fx-stroke-linecap: round;
+    -fx-stroke-linejoin: round;
+}
+
+.side-icon-wrap {
+    -fx-pref-width: 24;
+    -fx-pref-height: 24;
 }
 
 .side-icon-btn:hover {
@@ -106,6 +120,11 @@
 
 .side-icon-btn:hover .label {
     -fx-text-fill: #ffffff;
+}
+
+.side-icon-btn:hover .side-icon-path {
+    -fx-fill: #ffffff;
+    -fx-stroke: #ffffff;
 }
 
 .side-icon-btn.active {
@@ -117,9 +136,18 @@
     -fx-text-fill: #4fc1ff;
 }
 
+.side-icon-btn.active .side-icon-path {
+    -fx-fill: #4fc1ff;
+    -fx-stroke: #4fc1ff;
+}
+
 .side-icon {
     -fx-font-size: 24;
     -fx-text-fill: inherit;
+}
+
+.side-icon-img {
+    -fx-effect: null;
 }
 
 .bottom-dot {
