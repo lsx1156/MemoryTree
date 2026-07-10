@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -24,4 +25,12 @@ public class IntrospectionRecord {
     private String rewrittenText;
     private long rewriteTimeMs;
     private boolean isFinal;
+    private Map<String, Object> metadata;
+    
+    public void setMetadata(String key, Object value) {
+        if (this.metadata == null) {
+            this.metadata = new java.util.HashMap<>();
+        }
+        this.metadata.put(key, value);
+    }
 }

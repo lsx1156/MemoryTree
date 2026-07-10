@@ -7,6 +7,7 @@ import com.memorytree.enums.BranchType;
 public interface RLBranch {
     ActionSpace observe(ObservationSpace observation);
     void loadBranch(String filePath);
+    void saveBranch(String filePath);
     void unloadBranch();
     boolean isLoaded();
     boolean isActive();

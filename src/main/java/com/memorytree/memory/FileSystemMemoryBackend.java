@@ -12,7 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,6 +26,8 @@ public class FileSystemMemoryBackend implements MemoryBackend {
     private final String MEMORY_FILE;
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private List<MemoryEntry> memoryStore = new ArrayList<>();
+    private Map<String, List<String>> invertedIndex = new HashMap<>();
+    private List<String> scopeKeywords = new ArrayList<>();
 
     public FileSystemMemoryBackend() {
         String appData = System.getProperty("user.home") + "/.memorytree";
@@ -50,6 +54,8 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         if (memoryStore.isEmpty()) {
             seedDefaultMemories();
         }
+        
+        buildIndex();
     }
     
     private void seedDefaultMemories() {
@@ -200,5 +206,65 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         } catch (IOException e) {
             // ignore
         }
+    }
+
+    @Override
+    public void buildIndex() {
+        invertedIndex.clear();
+        scopeKeywords.clear();
+        
+        for (MemoryEntry entry : memoryStore) {
+            String content = entry.getContent().toLowerCase();
+            String[] words = content.split("[\\s\\p{Punct}]+");
+            
+            for (String word : words) {
+                if (word.length() >= 2) {
+                    invertedIndex.computeIfAbsent(word, k -> new ArrayList<>()).add(entry.getId());
+                }
+            }
+            
+            if (entry.getTags() != null) {
+                for (String tag : entry.getTags()) {
+                    String tagLower = tag.toLowerCase();
+                    invertedIndex.computeIfAbsent(tagLower, k -> new ArrayList<>()).add(entry.getId());
+                    if (!scopeKeywords.contains(tagLower)) {
+                        scopeKeywords.add(tagLower);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean isInScope(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return true;
+        }
+        
+        String queryLower = query.toLowerCase();
+        String[] queryWords = queryLower.split("[\\s\\p{Punct}]+");
+        
+        int matchedScopeCount = 0;
+        int matchedIndexCount = 0;
+        
+        for (String word : queryWords) {
+            if (word.length() >= 2) {
+                if (scopeKeywords.contains(word)) {
+                    matchedScopeCount++;
+                }
+                if (invertedIndex.containsKey(word)) {
+                    matchedIndexCount++;
+                }
+            }
+        }
+        
+        if (queryWords.length == 0) {
+            return true;
+        }
+        
+        double scopeMatchRatio = (double) matchedScopeCount / queryWords.length;
+        double indexMatchRatio = (double) matchedIndexCount / queryWords.length;
+        
+        return scopeMatchRatio >= 0.3 || indexMatchRatio >= 0.5;
     }
 }

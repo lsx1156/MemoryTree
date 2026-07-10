@@ -1,8 +1,8 @@
 # 记忆树 MemoryTree
 
-> 纯逻辑类脑AI框架 — V2.1 认知架构规范参考实现
+> 纯逻辑类脑AI框架 — V3.0 推理流水线架构规范参考实现
 >
-> 版本：V2.1 | 状态：正式发布 | 基于《记忆树 MemoryTree V2.1 认知架构规范》
+> 版本：V3.0 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.0 推理流水线架构规范》
 
 ***
 
@@ -38,8 +38,8 @@
 
 | 层级      | 职责                 | 核心模块                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 树干内核层   | 基础推理、logits输出、KV缓存 | [OllamaTrunkKernel](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java)、[IntrospectiveInferenceService](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/IntrospectiveInferenceService.java)                                                                                                                                                                                                                         |
-| 强化学习树枝层 | 技能树、动作仲裁、观察器       | [RLBranch](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/RLBranch.java)、[ParallelBranchEvaluator](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/ParallelBranchEvaluator.java)、[DefaultLogicCheckBranch](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/DefaultLogicCheckBranch.java)、[FallacyDetectionBranch](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/FallacyDetectionBranch.java)               |
+| 树干内核层   | 基础推理、logits输出、KV缓存 | [OllamaTrunkKernel](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java)、[IntrospectiveInferenceService](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/IntrospectiveInferenceService.java)、[InferencePipelineService](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/InferencePipelineService.java)                                                                                         |
+| 强化学习树枝层 | 技能树、动作仲裁、观察器       | [RLBranch](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/RLBranch.java)、[ParallelBranchEvaluator](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/ParallelBranchEvaluator.java)、[DefaultLogicCheckBranch](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/DefaultLogicCheckBranch.java)、[FallacyDetectionBranch](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/FallacyDetectionBranch.java)、[CanopyParallelExplorer](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/CanopyParallelExplorer.java)               |
 | 记忆后端层   | 工作记忆、持久记忆、记忆固化     | [WorkingMemory](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/WorkingMemory.java)、[FileSystemMemoryBackend](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java)、[MemoryConsolidationService](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryConsolidationService.java)                                                                                                                  |
 | 调度控制层   | 生命周期、并行调度、异步I/O    | [LifecycleStateMachine](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/LifecycleStateMachine.java)、[InferenceStateMachine](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/InferenceStateMachine.java)、[DefaultSchedulerBus](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/DefaultSchedulerBus.java)、[AsyncIOScheduler](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/AsyncIOScheduler.java) |
 | 契约仲裁    | 契约规则CRUD、合规校验      | [ContractArbiter](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/ContractArbiter.java)、[DefaultContractArbiter](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java)                                                                                                                                                                                                                                         |
@@ -268,7 +268,7 @@ MemoryTree/
 
 ***
 
-## 九、V2.1 规范实现对比
+## 九、V3.0 规范实现对比
 
 ### 9.1 树干内核层（Trunk Kernel）
 
@@ -305,7 +305,7 @@ MemoryTree/
 | `search(query, top_k)` 接口      | ✅ 已实现 | `query(MemoryQuery)` 支持关键词+标签检索                                    |
 | `store(fragment, metadata)` 接口 | ✅ 已实现 | `store(MemoryEntry)`                                               |
 | `delete(fragment_id)` 接口       | ✅ 已实现 | `delete(String id)`                                                |
-| `build_index()` 接口             | ❌ 未实现 | 当前使用线性扫描，未建索引                                                      |
+| `build_index()` 接口             | ✅ 已实现 | 倒排索引构建，优化检索性能                                                      |
 | MemoryFragment 数据结构            | ✅ 已实现 | id/content/tags/createdAt/lastAccessedAt/accessCount/saliencyScore |
 | `set_heat()` 可选接口              | ✅ 已实现 | 通过 `saliencyScore` 字段                                              |
 | `decay_all_heat()` 可选接口        | ❌ 未实现 | 热度衰减未实现                                                            |
@@ -367,7 +367,7 @@ MemoryTree/
 | `load_contract(path)` 接口             | ✅ 已实现 | `loadContract(filePath)`                                           |
 | `validate_draft(draft, premises)` 接口 | ✅ 已实现 | `validateDraft(draft)`                                             |
 | `validate_final(final, history)` 接口  | ✅ 已实现 | `validateFinal(finalResult)`                                       |
-| `is_in_scope(query)` 接口              | ❌ 未实现 | 领域范围检查未实现                                                          |
+| `is_in_scope(query)` 接口              | ✅ 已实现 | 通过关键词匹配判断查询是否在领域范围内                                                          |
 | ArbitrationReport 数据结构               | ✅ 已实现 | result/violatingClauseId/matchedRules/complianceScore              |
 | 契约书外部性                               | ✅ 已实现 | 独立 JSON 文件                                                         |
 | 契约书可修改性                              | ✅ 已实现 | 操作者可随时编辑，下次推理生效                                                    |
@@ -381,10 +381,10 @@ MemoryTree/
 | ---------------------------------- | ----- | ----------------------------------------- |
 | **第一级：异步I/O与计算重叠**                 | ✅ 已实现 | `AsyncIOScheduler` 记忆预检索/日志异步写入           |
 | **第二级：多树枝并行评估**                    | ✅ 已实现 | `ParallelBranchEvaluator` 线程池并行 observe() |
-| **第三级：树冠级并行探索**                    | ❌ 未实现 | 多路径并行探索未实现                                |
-| **第四级：推理流水线化**                     | ❌ 未实现 | 远期探索方向                                    |
-| `configure_parallelism(config)` 接口 | ❌ 未实现 | 并行策略配置接口未实现                               |
-| `get_parallelism_status()` 接口      | ❌ 未实现 | 并行状态查询接口未实现                               |
+| **第三级：树冠级并行探索**                    | ✅ 已实现 | `CanopyParallelExplorer` 多路径并行推理+最优路径选择                                |
+| **第四级：推理流水线化**                     | ✅ 已实现 | `InferencePipelineService` prefetch-generate-validate流水线重叠                     |
+| `configure_parallelism(config)` 接口 | ✅ 已实现 | `configureParallelism(maxParallelBranches, threadPoolSize)` 并行策略配置                               |
+| `get_parallelism_status()` 接口      | ✅ 已实现 | `getParallelismStatus()` 并行状态查询                               |
 | 树干串行约束                             | ✅ 已实现 | generate() 单线程串行                          |
 | 写操作串行化                             | ✅ 已实现 | MemoryBackend store/delete 同步             |
 | 线程安全声明                             | ✅ 已实现 | observe() 线程安全，generate() 串行              |
@@ -445,33 +445,25 @@ MemoryTree/
 
 | 未实现项                            | 规范章节    | 影响        | 计划   |
 | ------------------------------- | ------- | --------- | ---- |
-| `build_index()` 记忆索引重建          | 3.3.1   | 大容量记忆检索效率 | V2.2 |
-| `decay_all_heat()` 热度衰减         | 3.3.3   | 认知热度冷启动   | V2.2 |
-| `is_in_scope()` 领域范围检查          | 5.4     | 超范围查询未拒绝  | V2.2 |
-| `configure_parallelism()` 并行配置  | 7.3     | 并行策略不可配置  | V2.2 |
-| `get_parallelism_status()` 并行状态 | 7.3     | 并行运行状态不可查 | V2.2 |
-| 树冠级并行探索                         | 7.2 第三级 | 复杂推理鲁棒性   | V2.3 |
-| 推理流水线化                          | 7.2 第四级 | 远期探索方向    | V3.0 |
-| KV 缓存真实句柄                       | 3.1.1   | 缓存复用效率    | V2.2 |
-| `save()` 树枝持久化                  | 3.2.2   | 树枝参数不可保存  | V2.2 |
-| 运行时边界审计                         | 3.4.1   | 设计原则运行时审计 | V2.2 |
+| `decay_all_heat()` 热度衰减         | 3.3.3   | 认知热度冷启动   | V3.1 |
+| KV 缓存真实句柄                       | 3.1.1   | 缓存复用效率    | V3.1 |
+| 运行时边界审计                         | 3.4.1   | 设计原则运行时审计 | V3.1 |
 
 ***
 
-## 十一、V2.1 更新内容
+## 十一、V3.0 更新内容
 
-- ✅ 双实例内生自干涉推理（IntrospectiveInferenceService）
-- ✅ 硬件自适应检测与推荐（HardwareDetector）
-- ✅ 记忆固化状态机（MemoryConsolidationService）
-- ✅ 多树枝并行评估（ParallelBranchEvaluator）
-- ✅ 推导树逻辑纯度分标注
-- ✅ 三级门控可视化（GatingEvent）
-- ✅ 异步I/O与计算重叠调度（AsyncIOScheduler）
-- ✅ 记忆管理分页与编辑功能
-- ✅ 契约仲裁规则 CRUD（DefaultContractArbiter）
-- ✅ 桌面 EXE 应用（JavaFX + jpackage）
-- ✅ 初始记忆种子（学者+研究者角色）
-- ✅ 硬件资源占用实时监控
+- ✅ V2.2 补全：`build_index()` 倒排索引重建（优化记忆检索性能）
+- ✅ V2.2 补全：`is_in_scope()` 领域范围检查（关键词匹配判断）
+- ✅ V2.2 补全：`saveBranch()` 树枝持久化（JSON格式保存参数）
+- ✅ V2.2 补全：`configure_parallelism()` / `get_parallelism_status()` 并行配置接口
+- ✅ V2.3：树冠级并行探索（`CanopyParallelExplorer` 多路径并行推理+最优路径选择）
+- ✅ V3.0：`OllamaTrunkKernel` 异步流式调用（`generateAsync()` 支持回调）
+- ✅ V3.0：推理流水线化（`InferencePipelineService` prefetch-generate-validate重叠）
+- ✅ 新增 `ParallelStatusDTO` 并行状态数据结构
+- ✅ 新增 `CanopyParallelExplorer` 树冠并行探索器
+- ✅ 新增 `InferencePipelineService` 推理流水线服务
+- ✅ `GenerateResult` 扩展：新增 `content`、`confidence`、`reward`、`metadata` 字段
 
 ***
 
@@ -518,7 +510,7 @@ build_exe.bat
 release/MemoryTree/
 ├── MemoryTree.exe        # 主程序
 ├── app/
-│   ├── memorytree-2.1.0.jar
+│   ├── memorytree-3.0.0.jar
 │   └── MemoryTree.cfg
 └── runtime/              # 内嵌 JRE 21
 ```
@@ -533,6 +525,7 @@ release/MemoryTree/
 
 ## 十五、文档参考
 
+- 《记忆树 MemoryTree V3.0 推理流水线架构规范》
 - 《记忆树 MemoryTree V2.1 认知架构规范》
 - 《记忆树 MemoryTree V2.0 认知架构规范》
 - 《记忆树（MemoryTree）纯逻辑类脑AI框架 项目整理》

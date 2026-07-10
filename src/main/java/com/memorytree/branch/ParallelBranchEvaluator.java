@@ -13,13 +13,13 @@ import java.util.concurrent.*;
 @Component
 public class ParallelBranchEvaluator {
 
-    private final ExecutorService branchExecutor;
+    private ExecutorService branchExecutor;
+    private int maxParallelBranches = 4;
+    private int threadPoolSize = Math.max(1, Runtime.getRuntime().availableProcessors() - 2);
 
     public ParallelBranchEvaluator() {
-        int cpuCores = Runtime.getRuntime().availableProcessors();
-        this.branchExecutor = Executors.newFixedThreadPool(Math.min(cpuCores - 2, 4));
-        log.info("Branch executor initialized with {} threads", branchExecutor instanceof ThreadPoolExecutor 
-                ? ((ThreadPoolExecutor) branchExecutor).getCorePoolSize() : cpuCores - 2);
+        this.branchExecutor = Executors.newFixedThreadPool(threadPoolSize);
+        log.info("Branch executor initialized with {} threads", threadPoolSize);
     }
 
     public List<ActionSpace> parallelObserve(List<RLBranch> branches, ObservationSpace observation) {
@@ -114,5 +114,26 @@ public class ParallelBranchEvaluator {
 
     public void shutdown() {
         branchExecutor.shutdown();
+    }
+
+    public void setMaxParallelBranches(int maxParallelBranches) {
+        this.maxParallelBranches = Math.max(1, maxParallelBranches);
+    }
+
+    public void setThreadPoolSize(int threadPoolSize) {
+        if (threadPoolSize > 0 && threadPoolSize != this.threadPoolSize) {
+            this.threadPoolSize = threadPoolSize;
+            ExecutorService oldExecutor = this.branchExecutor;
+            this.branchExecutor = Executors.newFixedThreadPool(threadPoolSize);
+            oldExecutor.shutdown();
+            log.info("Branch executor reconfigured with {} threads", threadPoolSize);
+        }
+    }
+
+    public int getActiveBranchCount() {
+        if (branchExecutor instanceof ThreadPoolExecutor) {
+            return ((ThreadPoolExecutor) branchExecutor).getActiveCount();
+        }
+        return 0;
     }
 }

@@ -4,7 +4,9 @@ import com.memorytree.dto.GenerateConfig;
 import com.memorytree.dto.GenerateResult;
 import com.memorytree.dto.IntrospectionRecord;
 import com.memorytree.system.GatingEvent;
+import com.memorytree.branch.CanopyParallelExplorer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,6 +17,12 @@ import java.util.List;
 public class IntrospectiveInferenceService {
 
     private final TrunkKernel trunkKernel;
+    
+    @Autowired(required = false)
+    private CanopyParallelExplorer canopyParallelExplorer;
+    
+    private boolean enableParallelExploration = true;
+    private int parallelPathCount = 3;
 
     public IntrospectiveInferenceService(TrunkKernel trunkKernel) {
         this.trunkKernel = trunkKernel;
@@ -48,11 +56,26 @@ public class IntrospectiveInferenceService {
                         .build();
 
                 String fullPrompt = buildGeneratePrompt(prompt, premises);
-                currentResult = trunkKernel.generate(fullPrompt, generateConfig);
-                record.setGeneratedText(currentResult.getText());
-                record.setInferenceTimeMs(currentResult.getInferenceTimeMs());
                 
-                log.info("Draft generated in {}ms", currentResult.getInferenceTimeMs());
+                if (round == 1 && enableParallelExploration && canopyParallelExplorer != null) {
+                    CanopyParallelExplorer.ParallelExploreResult exploreResult = 
+                            canopyParallelExplorer.exploreParallel(fullPrompt, generateConfig, parallelPathCount);
+                    
+                    currentResult = exploreResult.bestPath();
+                    record.setGeneratedText(currentResult.getText());
+                    record.setInferenceTimeMs(exploreResult.durationMs());
+                    record.setMetadata("parallel_paths", exploreResult.allPaths().size());
+                    
+                    log.info("Parallel exploration completed: {} paths in {}ms, best confidence: {}", 
+                            exploreResult.allPaths().size(), exploreResult.durationMs(), 
+                            currentResult.getConfidence());
+                } else {
+                    currentResult = trunkKernel.generate(fullPrompt, generateConfig);
+                    record.setGeneratedText(currentResult.getText());
+                    record.setInferenceTimeMs(currentResult.getInferenceTimeMs());
+                    
+                    log.info("Draft generated in {}ms", currentResult.getInferenceTimeMs());
+                }
             }
 
             record.setAction("LOGIC_VALIDATE");

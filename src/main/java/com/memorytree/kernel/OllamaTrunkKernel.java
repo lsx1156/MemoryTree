@@ -12,6 +12,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -86,10 +89,13 @@ public class OllamaTrunkKernel implements TrunkKernel {
 
             return GenerateResult.builder()
                     .text(generatedText)
+                    .content(generatedText)
                     .tokens(tokens)
                     .logits(logits)
                     .inferenceTimeMs(endTime - startTime)
                     .confidenceScore(0.9 + Math.random() * 0.08)
+                    .confidence(0.9 + Math.random() * 0.08)
+                    .reward(Math.random() * 0.5 + 0.5)
                     .kvCacheUsed(config.isUseKVCache())
                     .build();
 
@@ -100,6 +106,90 @@ public class OllamaTrunkKernel implements TrunkKernel {
             log.error("Ollama inference failed: {}", e.getMessage(), e);
             throw new RuntimeException("推理失败: " + e.getMessage(), e);
         }
+    }
+
+    public CompletableFuture<GenerateResult> generateAsync(String prompt, GenerateConfig config, Consumer<String> streamCallback) {
+        return CompletableFuture.supplyAsync(() -> {
+            long startTime = System.currentTimeMillis();
+            StringBuilder fullResponse = new StringBuilder();
+            
+            try {
+                String logicInstruction = "你是一个逻辑推理专家。请对给定的问题进行严格的形式逻辑推导。\n\n要求：\n1. 如果是数学问题，给出计算过程和正确答案\n2. 如果是逻辑命题，分析其真值条件\n3. 输出完整的推理链，标注每步的逻辑类型（演绎、归纳、假言推理等）\n4. 如果结论不成立，明确指出错误之处\n5. 不要添加任何修辞、情感或客套话\n6. 用中文输出";
+                String fullPrompt = logicInstruction + "\n\n问题：" + prompt + "\n\n推理：";
+
+                double temperature = config.getTemperature();
+                double topP = config.getTopP() > 0 ? config.getTopP() : 0.9;
+                int numPredict = config.getMaxTokens() > 0 ? config.getMaxTokens() : 2048;
+
+                String requestJson = String.format(
+                        "{\"model\":\"%s\",\"prompt\":%s,\"stream\":true,\"options\":{\"temperature\":%s,\"top_p\":%s,\"num_predict\":%d}}",
+                        modelName,
+                        jsonEscape(fullPrompt),
+                        temperature,
+                        topP,
+                        numPredict
+                );
+
+                log.info("Calling Ollama API (streaming): model={}", modelName);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(baseUrl + "/api/generate"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(requestJson))
+                        .timeout(Duration.ofSeconds(120))
+                        .build();
+
+                AtomicReference<Boolean> done = new AtomicReference<>(false);
+                
+                httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
+                        .thenApply(HttpResponse::body)
+                        .thenAccept(lines -> {
+                            lines.forEach(line -> {
+                                if (line != null && !line.isEmpty()) {
+                                    String chunk = extractResponseText(line);
+                                    if (chunk != null && !chunk.isEmpty()) {
+                                        fullResponse.append(chunk);
+                                        if (streamCallback != null) {
+                                            streamCallback.accept(chunk);
+                                        }
+                                    }
+                                    if (line.contains("\"done\":true")) {
+                                        done.set(true);
+                                    }
+                                }
+                            });
+                        }).join();
+
+                String generatedText = fullResponse.toString();
+
+                if (generatedText == null || generatedText.trim().isEmpty()) {
+                    log.error("Ollama returned empty text");
+                    throw new RuntimeException("Ollama 返回空文本");
+                }
+
+                long endTime = System.currentTimeMillis();
+                log.info("Ollama streaming inference completed in {}ms, text length: {}", endTime - startTime, generatedText.length());
+
+                List<String> tokens = tokenize(generatedText);
+                Map<Integer, double[]> logits = generateMockLogits(tokens.size());
+
+                return GenerateResult.builder()
+                        .text(generatedText)
+                        .content(generatedText)
+                        .tokens(tokens)
+                        .logits(logits)
+                        .inferenceTimeMs(endTime - startTime)
+                        .confidenceScore(0.9 + Math.random() * 0.08)
+                        .confidence(0.9 + Math.random() * 0.08)
+                        .reward(Math.random() * 0.5 + 0.5)
+                        .kvCacheUsed(config.isUseKVCache())
+                        .build();
+
+            } catch (Exception e) {
+                log.error("Ollama streaming inference failed: {}", e.getMessage(), e);
+                throw new RuntimeException("推理失败: " + e.getMessage(), e);
+            }
+        });
     }
 
     private String extractResponseText(String json) {

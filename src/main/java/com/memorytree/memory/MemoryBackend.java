@@ -14,4 +14,6 @@ public interface MemoryBackend {
     List<MemoryEntry> getAll();
     int getTotalCount();
     void initialize();
+    void buildIndex();
+    boolean isInScope(String query);
 }

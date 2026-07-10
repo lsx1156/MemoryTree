@@ -13,4 +13,6 @@ public interface SchedulerBus {
     void resetWorkingMemory();
     boolean isInitialized();
     String getSystemStatus();
+    void configureParallelism(int maxParallelBranches, int threadPoolSize);
+    ParallelStatusDTO getParallelismStatus();
 }

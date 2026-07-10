@@ -13,9 +13,9 @@
 
     <groupId>com.memorytree</groupId>
     <artifactId>memorytree</artifactId>
-    <version>2.1.0</version>
+    <version>3.0.0</version>
     <name>MemoryTree</name>
-    <description>记忆树（MemoryTree）纯逻辑类脑AI框架 - V2.1认知架构规范</description>
+    <description>记忆树（MemoryTree）纯逻辑类脑AI框架 - V3.0推理流水线架构规范</description>
 
     <properties>
         <java.version>21</java.version>
