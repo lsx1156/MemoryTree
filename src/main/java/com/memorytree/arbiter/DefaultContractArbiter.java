@@ -71,12 +71,20 @@ public class DefaultContractArbiter implements ContractArbiter {
         String violatingClauseName = null;
         double complianceScore = 1.0;
         boolean failSafeTriggered = false;
+        int totalEnabledClauses = 0;
+        int violatedCount = 0;
 
         for (ContractClause clause : activeContract.getClauses()) {
+            if (!clause.isEnabled()) {
+                continue;
+            }
+            totalEnabledClauses++;
+            
             boolean violated = checkClause(text, clause);
             if (violated) {
-                matchedRules.add(clause.getRule());
-                complianceScore -= clause.getSeverity() * 0.2;
+                matchedRules.add(clause.getName() + ": " + clause.getRule());
+                complianceScore -= clause.getSeverity();
+                violatedCount++;
                 
                 if (clause.isFailSafe()) {
                     failSafeTriggered = true;
@@ -92,7 +100,12 @@ public class DefaultContractArbiter implements ContractArbiter {
             }
         }
 
-        complianceScore = Math.max(0, complianceScore);
+        complianceScore = Math.max(0.0, Math.min(1.0, complianceScore));
+        
+        if (totalEnabledClauses > 0) {
+            double normalizedScore = (totalEnabledClauses - violatedCount) * 1.0 / totalEnabledClauses;
+            complianceScore = (complianceScore + normalizedScore) / 2.0;
+        }
 
         ArbitrationResult result;
         if (failSafeTriggered) {
@@ -111,7 +124,7 @@ public class DefaultContractArbiter implements ContractArbiter {
                 .violatingClauseName(violatingClauseName)
                 .matchedRules(matchedRules)
                 .complianceScore(complianceScore)
-                .explanation(buildExplanation(result, matchedRules))
+                .explanation(buildExplanation(result, matchedRules, complianceScore))
                 .build();
     }
 
@@ -123,38 +136,58 @@ public class DefaultContractArbiter implements ContractArbiter {
             return false;
         }
         
-        if (clause.isFailSafe()) {
-            return false;
-        }
-        
         if (rule.contains("不得包含")) {
             String forbidden = extractForbiddenWord(rule);
-            return textLower.contains(forbidden.toLowerCase());
+            String[] forbiddenWords = forbidden.split("[、，,\\s]+");
+            for (String word : forbiddenWords) {
+                word = word.replaceAll("[\"'等]", "").trim();
+                if (!word.isEmpty() && textLower.contains(word)) {
+                    return true;
+                }
+            }
+            return false;
         }
         
         if (rule.contains("必须包含")) {
             String required = extractRequiredWord(rule);
-            return !textLower.contains(required.toLowerCase());
+            String[] requiredWords = required.split("[、，,\\s]+");
+            boolean found = false;
+            for (String word : requiredWords) {
+                word = word.replaceAll("[\"'等]", "").trim();
+                if (!word.isEmpty() && textLower.contains(word)) {
+                    found = true;
+                    break;
+                }
+            }
+            return !found;
         }
         
         if (rule.contains("禁止") || rule.contains("避免")) {
             String[] parts = rule.split("[禁止避免]");
             if (parts.length > 1) {
-                String forbidden = parts[1].trim().toLowerCase();
-                if (forbidden.contains("有害") || forbidden.contains("非法") || 
-                    forbidden.contains("伦理")) {
-                    return false;
+                String forbidden = parts[1].trim();
+                String[] forbiddenWords = forbidden.split("[、，,\\s]+");
+                for (String word : forbiddenWords) {
+                    word = word.replaceAll("[\"'等]", "").trim();
+                    if (!word.isEmpty() && textLower.contains(word)) {
+                        return true;
+                    }
                 }
-                return textLower.contains(forbidden);
             }
         }
         
         if (rule.contains("逻辑推导")) {
-            return !textLower.contains("推导") && !textLower.contains("推理") && !textLower.contains("结论");
+            return !textLower.contains("推导") && !textLower.contains("推理") && !textLower.contains("结论") 
+                    && !textLower.contains("因此") && !textLower.contains("所以") && !textLower.contains("得出");
         }
         
-        if (rule.contains("证据支持")) {
-            return !textLower.contains("根据") && !textLower.contains("基于") && !textLower.contains("证据");
+        if (rule.contains("证据") || rule.contains("支持")) {
+            return !textLower.contains("根据") && !textLower.contains("基于") && !textLower.contains("证据") 
+                    && !textLower.contains("前提") && !textLower.contains("假设") && !textLower.contains("理由");
+        }
+        
+        if (rule.contains("一致")) {
+            return false;
         }
         
         return false;
@@ -170,20 +203,26 @@ public class DefaultContractArbiter implements ContractArbiter {
         return rule.substring(idx).trim();
     }
 
-    private String buildExplanation(ArbitrationResult result, List<String> matchedRules) {
+    private String buildExplanation(ArbitrationResult result, List<String> matchedRules, double complianceScore) {
         StringBuilder sb = new StringBuilder();
         switch (result) {
             case COMPLIANT:
-                sb.append("契约仲裁通过：输出符合所有规则约束。");
+                sb.append(String.format("契约仲裁通过：输出符合所有规则约束。合规分数：%.2f", complianceScore));
                 break;
             case NON_COMPLIANT:
-                sb.append("契约仲裁失败：输出违反以下规则：");
+                sb.append(String.format("契约仲裁失败：输出违反以下规则，合规分数：%.2f\n", complianceScore));
                 for (String rule : matchedRules) {
-                    sb.append("\n- ").append(rule);
+                    sb.append("- ").append(rule).append("\n");
                 }
                 break;
             case LOW_CONFIDENCE:
-                sb.append("契约仲裁低置信度：输出部分符合规则，建议审查。");
+                sb.append(String.format("契约仲裁低置信度：输出部分符合规则，建议审查。合规分数：%.2f", complianceScore));
+                if (!matchedRules.isEmpty()) {
+                    sb.append("\n涉及规则：");
+                    for (String rule : matchedRules) {
+                        sb.append("\n- ").append(rule);
+                    }
+                }
                 break;
             case FAIL_SAFE_TRIGGERED:
                 sb.append("FAIL-SAFE触发：输出违反安全边界规则，强制终止。");
