@@ -192,8 +192,10 @@
 
 .editor-tabpane .tab:selected {
     -fx-background-color: rgba(14, 99, 156, 0.2);
-    -fx-border-color: #4fc1ff;
-    -fx-border-width: 2 0 0 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
 }
 
 .editor-tabpane .tab-label {
