@@ -21,4 +21,5 @@ public class MemoryEntry {
     private int accessCount;
     private double saliencyScore;
     private double heat;
+    private List<Double> embedding;
 }

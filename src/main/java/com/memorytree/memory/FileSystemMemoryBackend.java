@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +31,10 @@ public class FileSystemMemoryBackend implements MemoryBackend {
     private List<MemoryEntry> memoryStore = new ArrayList<>();
     private Map<String, List<String>> invertedIndex = new HashMap<>();
     private List<String> scopeKeywords = new ArrayList<>();
+    private final EmbeddingService embeddingService;
 
-    public FileSystemMemoryBackend() {
+    public FileSystemMemoryBackend(EmbeddingService embeddingService) {
+        this.embeddingService = embeddingService;
         String appData = System.getProperty("user.home") + "/.memorytree";
         this.MEMORY_DIR = appData + "/data/memory";
         this.MEMORY_FILE = MEMORY_DIR + "/memory_store.json";
@@ -136,6 +139,12 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         entry.setCreatedAt(LocalDateTime.now());
         entry.setLastAccessedAt(LocalDateTime.now());
         
+        if (entry.getEmbedding() == null || entry.getEmbedding().isEmpty()) {
+            entry.setEmbedding(embeddingService.generateEmbedding(entry.getContent()));
+            log.debug("Generated embedding for memory entry: id={}, dimensions={}", 
+                    entry.getId(), entry.getEmbedding().size());
+        }
+        
         Optional<MemoryEntry> existing = memoryStore.stream()
                 .filter(e -> e.getId().equals(entry.getId()))
                 .findFirst();
@@ -184,6 +193,34 @@ public class FileSystemMemoryBackend implements MemoryBackend {
                     entry.setAccessCount(entry.getAccessCount() + 1);
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MemoryEntry> semanticSearch(String queryText, int limit) {
+        if (queryText == null || queryText.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Double> queryEmbedding = embeddingService.generateEmbedding(queryText);
+        
+        List<MemoryEntry> results = memoryStore.stream()
+                .filter(entry -> entry.getEmbedding() != null && !entry.getEmbedding().isEmpty())
+                .map(entry -> {
+                    double similarity = embeddingService.cosineSimilarity(queryEmbedding, entry.getEmbedding());
+                    return Map.entry(entry, similarity);
+                })
+                .filter(entrySimilarity -> entrySimilarity.getValue() >= 0.1)
+                .sorted(Map.Entry.<MemoryEntry, Double>comparingByValue().reversed())
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .peek(entry -> {
+                    entry.setLastAccessedAt(LocalDateTime.now());
+                    entry.setAccessCount(entry.getAccessCount() + 1);
+                })
+                .collect(Collectors.toList());
+
+        log.info("Semantic search completed: query='{}', results={}", queryText, results.size());
+        return results;
     }
 
     @Override

@@ -20,6 +20,8 @@ spring:
           temperature: 0.3
           top-p: 0.9
           num-predict: 2048
+      embedding:
+        model: qwen2.5:7b
 
 logging:
   level:
@@ -31,3 +33,5 @@ memorytree:
   kernel:
     model-path: qwen2.5:7b
     default-temperature: 0.3
+  embedding:
+    enabled: true

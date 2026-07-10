@@ -10,6 +10,7 @@ public interface MemoryBackend {
     MemoryEntry store(MemoryEntry entry);
     Optional<MemoryEntry> retrieve(String id);
     List<MemoryEntry> query(MemoryQuery query);
+    List<MemoryEntry> semanticSearch(String queryText, int limit);
     void delete(String id);
     List<MemoryEntry> getAll();
     int getTotalCount();

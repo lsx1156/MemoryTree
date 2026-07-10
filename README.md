@@ -117,6 +117,7 @@ IDLE → DRAFT_GENERATE → LOGIC_VALIDATE → [VALID] → OUTPUT
 - ✅ **分页浏览**：大容量记忆分页展示，每页 10 条
 - ✅ **详情查看与编辑**：完整记忆属性（内容、类型、热度、创建时间、固化状态）可查阅可修改
 - ✅ **初始记忆种子**：默认研究者角色记忆（形式逻辑定律、奥卡姆剃刀、可证伪性等）
+- ✅ **向量检索**（V3.1）：基于 Ollama Embedding API 的语义搜索，支持余弦相似度匹配，自动生成文本向量嵌入
 
 ### 3.3 树枝管理
 
@@ -341,6 +342,27 @@ build_exe.bat
 | 内核内存 | ≤ 8GB |
 | 热度衰减 | 衰减率 ∈ [0, 1] |
 | 并行度 | ≤ CPU核心数 × 2 |
+
+### 6.7 向量检索验证
+
+**验证方法：**
+1. 启动应用后观察日志：`EmbeddingService initialized - enabled: true`
+2. 添加一条新记忆，观察日志：`Generated embedding for memory entry`
+3. 查看 memory_store.json，确认每个记忆条目包含 `embedding` 字段（4096维向量）
+4. 验证语义搜索：使用与记忆内容语义相似但关键词不同的查询
+
+**实现文件：**
+- [EmbeddingService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/EmbeddingService.java) - 向量生成服务
+- [MemoryEntry.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/dto/MemoryEntry.java) - 记忆条目（含embedding字段）
+- [FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) - 语义搜索实现
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| embedding字段 | 每个记忆条目都有embedding |
+| 向量维度 | 4096（Ollama模型输出） |
+| 余弦相似度 | 语义相似文本相似度 > 0.5 |
+| 降级策略 | Ollama不可用时使用基于hash的伪随机向量 |
 
 ***
 
