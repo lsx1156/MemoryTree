@@ -620,49 +620,223 @@ MemoryTree/
 
 ## 十四、构建与打包
 
-### 14.1 Maven 构建
+### 14.1 环境准备
+
+**JDK 要求**：必须使用 JDK 21（不支持 JDK 8）
 
 ```bash
-mvn clean package -DskipTests
+# 检查 JDK 版本
+java -version
+# 预期输出：openjdk version "21.x.x"
 ```
 
-### 14.2 EXE 打包
+**推荐 JDK 下载**：
+- Microsoft JDK 21: `C:\Program Files\Microsoft\jdk-21.0.9.10-hotspot`
+- 或使用其他 JDK 21 发行版
 
-使用 [build\_exe.bat](file:///e:/AI/MemoryTree/build_exe.bat)：
+**Ollama 要求**：
+- 必须安装 Ollama 服务
+- 必须下载模型：`ollama pull qwen2.5:7b`
+- 必须启动服务：`ollama serve`
+
+### 14.2 源码运行
+
+```bash
+cd MemoryTree
+mvn spring-boot:run
+```
+
+### 14.3 Maven 构建
+
+```bash
+# 清理并打包（跳过测试）
+mvn clean package -DskipTests
+
+# 构建成功后，JAR 文件位于：
+# target/memorytree-3.1.0.jar
+```
+
+### 14.4 EXE 打包（Windows）
+
+使用 [build\_exe.bat](file:///e:/AI/MemoryTree/build_exe.bat) 脚本：
 
 ```bash
 build_exe.bat
 ```
 
-打包参数：
+**打包流程**：
 
-- `--type app-image` — 生成应用镜像
-- `--main-jar memorytree-3.1.0.jar` — 主 JAR 文件
-- `-Xmx4g` — JVM 最大堆内存 4GB
-- `--add-opens` — 模块开放（java.lang / java.util / java.lang.reflect）
-- `-Dspring.main.web-application-type=none` — 禁用 Web 服务器
-- `--win-console` — Windows 控制台模式
+| 步骤 | 操作 | 说明 |
+|-----|------|-----|
+| 1 | 检查 JDK 环境 | 验证 JDK 21 是否存在 |
+| 2 | Maven 打包 | `mvn clean package -DskipTests` |
+| 3 | 准备输入目录 | 复制 JAR 到 `target/jpackage-input/` |
+| 4 | jpackage 打包 | 生成 EXE 应用镜像 |
 
-### 14.3 输出位置
+**打包参数详解**：
+
+| 参数 | 值 | 说明 |
+|-----|-----|-----|
+| `--type` | `app-image` | 生成应用镜像（非安装包） |
+| `--name` | `MemoryTree` | 应用名称 |
+| `--input` | `target/jpackage-input` | 输入目录 |
+| `--main-jar` | `memorytree-3.1.0.jar` | 主 JAR 文件 |
+| `--dest` | `release` | 输出目录 |
+| `-Xmx4g` | - | JVM 最大堆内存 4GB |
+| `-Xms512m` | - | JVM 初始堆内存 512MB |
+| `--add-opens` | `java.base/java.lang=ALL-UNNAMED` | 模块开放（JavaFX 兼容性） |
+| `-Dspring.main.web-application-type=none` | - | 禁用 Web 服务器（桌面应用） |
+| `--win-console` | - | Windows 控制台模式（便于调试） |
+
+### 14.5 输出结构
 
 ```
 release/MemoryTree/
-├── MemoryTree.exe        # 主程序
+├── MemoryTree.exe        # 主程序（双击运行）
 ├── app/
-│   ├── memorytree-3.1.0.jar
-│   └── MemoryTree.cfg
-└── runtime/              # 内嵌 JRE 21
+│   ├── memorytree-3.1.0.jar   # 应用 JAR
+│   └── MemoryTree.cfg         # JVM 配置
+├── runtime/              # 内嵌 JRE 21（无需单独安装）
+└── bin/                  # 启动脚本
 ```
+
+### 14.6 代码修改后重新打包流程
+
+**重要**：修改代码后必须重新打包才能生效！
+
+```bash
+# 1. 停止当前运行的应用
+# 2. 删除旧的 release 目录
+rmdir /s /q release
+
+# 3. 重新打包
+build_exe.bat
+
+# 4. 运行新的 EXE
+release\MemoryTree\MemoryTree.exe
+```
+
+### 14.7 常见问题
+
+**Q1: 运行 EXE 后显示 V2.1 版本？**
+- **原因**：运行的是旧版本的 EXE
+- **解决**：重新执行 `build_exe.bat` 生成新版本
+
+**Q2: Maven 编译报错 "No compiler is provided"?**
+- **原因**：系统环境变量指向 JRE 而非 JDK
+- **解决**：使用 `build_exe.bat` 脚本（已配置正确的 JDK 路径）
+
+**Q3: EXE 启动后无响应？**
+- **原因**：Ollama 服务未启动或模型未下载
+- **解决**：
+  ```bash
+  ollama serve   # 启动服务
+  ollama pull qwen2.5:7b   # 下载模型
+  ```
+
+**Q4: jpackage 报错 "应用程序目标目录已存在"?**
+- **原因**：旧的 release 目录未删除
+- **解决**：`rmdir /s /q release` 后重新打包
+
+**Q5: 打包后界面显示异常？**
+- **原因**：CSS 或 FXML 文件未正确打包
+- **解决**：确保 `src/main/resources/` 下的文件完整
+
+### 14.8 运行前检查清单
+
+- [ ] JDK 21 已安装
+- [ ] Ollama 服务已启动（`ollama serve`）
+- [ ] qwen2.5:7b 模型已下载（`ollama pull qwen2.5:7b`）
+- [ ] 网络可访问 localhost:11434
+- [ ] 内存 >= 8GB（推荐 16GB）
+- [ ] 首次运行会在 `~/.memorytree/` 生成数据目录
 
 ***
 
-## 十四、许可证
+## 十五、版本更新历史
+
+### V3.1（运行时边界审计规范）- 2026-07-10
+
+**核心新增功能：**
+
+| 功能模块 | 更新内容 | 实现文件 |
+|---------|---------|---------|
+| **全局UI优化** | 统一弹窗样式、控件对齐、深色主题美化 | [style.css](file:///e:/AI/MemoryTree/src/main/resources/css/style.css) |
+| **热度衰减** | `decay_all_heat()` 支持自定义衰减率 | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java)、[FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
+| **KV缓存句柄** | `getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`/`clearKVCache()` | [TrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/TrunkKernel.java)、[OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **运行时边界审计** | 设计原则审计（4项）+ 边界校验（4项） | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
+
+**数据结构扩展：**
+- `MemoryEntry` 新增 `heat` 字段（记忆热度值）
+
+**UI样式更新：**
+- 新增 `custom-dialog`、`custom-alert` 统一弹窗样式
+- 新增 `form-row`、`form-label`、`form-field`、`form-textarea` 表单布局样式
+- 优化按钮样式（`btn-dialog-ok`、`btn-dialog-cancel`、`btn-alert-ok`）
+
+---
+
+### V3.0（推理流水线架构规范）- 2026-07-10
+
+**核心新增功能：**
+
+| 功能模块 | 更新内容 | 实现文件 |
+|---------|---------|---------|
+| **树冠级并行探索** | 多路径并行推理（不同温度参数）+ 最优路径选择 | [CanopyParallelExplorer.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/CanopyParallelExplorer.java) |
+| **异步流式调用** | `generateAsync()` 支持流式回调 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **推理流水线化** | prefetch→generate→validate 流水线重叠执行 | [InferencePipelineService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/InferencePipelineService.java) |
+
+**V2.2 补全功能：**
+- `build_index()` 倒排索引重建（优化记忆检索性能）
+- `is_in_scope()` 领域范围检查（关键词匹配判断）
+- `saveBranch()` 树枝持久化（JSON格式保存参数）
+- `configure_parallelism()` / `get_parallelism_status()` 并行配置接口
+
+**数据结构扩展：**
+- `ParallelStatusDTO` 并行状态数据结构
+- `GenerateResult` 新增 `content`、`confidence`、`reward`、`metadata` 字段
+
+---
+
+### V2.1（认知架构规范）- 2026-07-10
+
+**核心新增功能：**
+
+| 功能模块 | 更新内容 | 实现文件 |
+|---------|---------|---------|
+| **双实例内生自干涉** | 高温生成 + 低温校验的交替执行，多轮内省循环 | [IntrospectiveInferenceService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/IntrospectiveInferenceService.java) |
+| **硬件自适应检测** | CPU核心数、内存大小检测，资源占用实时监控 | [HardwareDetector.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/HardwareDetector.java) |
+| **记忆固化状态机** | 显著性检测（输出熵、推理链一致性、置信度）+ 记忆固化 | [MemoryConsolidationService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryConsolidationService.java) |
+| **多树枝并行评估** | 线程池并行执行多个RLBranch | [ParallelBranchEvaluator.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/ParallelBranchEvaluator.java) |
+| **异步I/O调度** | I/O操作与计算重叠执行 | [AsyncIOScheduler.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/AsyncIOScheduler.java) |
+| **契约仲裁** | 契约规则CRUD、合规校验 | [DefaultContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java) |
+
+**UI更新：**
+- JavaFX桌面EXE应用（jpackage打包）
+- 倒排索引Tab布局改为上下布局
+- 初始记忆种子（学者+研究者角色）
+
+---
+
+### V2.0（认知架构规范）- 2026-07-10
+
+**核心架构实现：**
+- 四层架构：树干内核层、强化学习树枝层、记忆后端层、调度控制层
+- 契约仲裁机制（独立于模型的外部校验标准）
+- 内省推理状态机（草稿生成-逻辑校验-输出/重写）
+- 意识生命周期状态机（初始化→运行→终止）
+- Ollama集成（qwen2.5:7b模型）
+- 工作记忆与持久记忆分离
+
+***
+
+## 十六、许可证
 
 本项目仅供学习与研究使用。
 
 ***
 
-## 十五、文档参考
+## 十七、文档参考
 
 - 《记忆树 MemoryTree V3.0 推理流水线架构规范》
 - 《记忆树 MemoryTree V2.1 认知架构规范》

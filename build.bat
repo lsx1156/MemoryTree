@@ -48,7 +48,7 @@ echo 正在使用jpackage创建EXE...
     --type exe ^
     --name MemoryTree ^
     --input target ^
-    --main-jar memorytree-2.1.0.jar ^
+    --main-jar memorytree-3.1.0.jar ^
     --main-class com.memorytree.MemoryTreeApplication ^
     --dest target\jpackage ^
     --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" ^
