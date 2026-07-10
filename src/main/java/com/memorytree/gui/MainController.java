@@ -251,6 +251,20 @@ public class MainController {
         introspectionSlider.valueProperty().addListener((obs, old, val) -> 
             introspectionValueLabel.setText(String.valueOf(val.intValue())));
 
+        mainTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab != null) {
+                if (newTab == tabInference) {
+                    syncTabSelection("inference");
+                } else if (newTab == tabMemory) {
+                    syncTabSelection("memory");
+                } else if (newTab == tabBranches) {
+                    syncTabSelection("branches");
+                } else if (newTab == tabContract) {
+                    syncTabSelection("contract");
+                }
+            }
+        });
+
         updateSystemStatus();
         loadBranches();
         loadPersistentMemory();
@@ -377,6 +391,24 @@ public class MainController {
     }
 
     private void showTab(String tab) {
+        syncTabSelection(tab);
+        switch (tab) {
+            case "inference": 
+                mainTabPane.getSelectionModel().select(tabInference);
+                break;
+            case "memory": 
+                mainTabPane.getSelectionModel().select(tabMemory);
+                break;
+            case "branches": 
+                mainTabPane.getSelectionModel().select(tabBranches);
+                break;
+            case "contract": 
+                mainTabPane.getSelectionModel().select(tabContract);
+                break;
+        }
+    }
+
+    private void syncTabSelection(String tab) {
         tabInferenceBtn.getStyleClass().remove("active");
         tabMemoryBtn.getStyleClass().remove("active");
         tabBranchesBtn.getStyleClass().remove("active");
@@ -384,19 +416,15 @@ public class MainController {
 
         switch (tab) {
             case "inference": 
-                mainTabPane.getSelectionModel().select(tabInference);
                 tabInferenceBtn.getStyleClass().add("active"); 
                 break;
             case "memory": 
-                mainTabPane.getSelectionModel().select(tabMemory);
                 tabMemoryBtn.getStyleClass().add("active"); 
                 break;
             case "branches": 
-                mainTabPane.getSelectionModel().select(tabBranches);
                 tabBranchesBtn.getStyleClass().add("active"); 
                 break;
             case "contract": 
-                mainTabPane.getSelectionModel().select(tabContract);
                 tabContractBtn.getStyleClass().add("active"); 
                 break;
         }

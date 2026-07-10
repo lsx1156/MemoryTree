@@ -109,16 +109,17 @@
 }
 
 .side-icon-btn.active {
-    -fx-background-color: #1e1e1e;
-    -fx-border-color: #0e639c;
+    -fx-background-color: rgba(14, 99, 156, 0.2);
+    -fx-border-color: #4fc1ff;
 }
 
 .side-icon-btn.active .label {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #4fc1ff;
 }
 
 .side-icon {
     -fx-font-size: 24;
+    -fx-text-fill: inherit;
 }
 
 .bottom-dot {
