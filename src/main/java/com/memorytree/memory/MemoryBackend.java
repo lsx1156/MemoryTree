@@ -16,4 +16,5 @@ public interface MemoryBackend {
     void initialize();
     void buildIndex();
     boolean isInScope(String query);
+    void decayAllHeat(double decayRate);
 }

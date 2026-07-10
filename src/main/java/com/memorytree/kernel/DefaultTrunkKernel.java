@@ -96,4 +96,22 @@ public class DefaultTrunkKernel implements TrunkKernel {
     public long getMemoryUsageBytes() {
         return 1024 * 1024 * 512;
     }
+
+    @Override
+    public String getKVCacheHandle() {
+        return "default_kv_cache_" + System.currentTimeMillis();
+    }
+
+    @Override
+    public void clearKVCache() {
+    }
+
+    @Override
+    public String cloneKVCache() {
+        return "default_kv_cache_clone_" + System.currentTimeMillis();
+    }
+
+    @Override
+    public void restoreKVCache(String handle) {
+    }
 }

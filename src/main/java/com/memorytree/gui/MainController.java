@@ -16,11 +16,16 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -812,22 +817,43 @@ public class MainController {
 
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialogPane.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+        dialogPane.getStyleClass().add("custom-dialog");
 
-        VBox content = new VBox(10);
+        VBox content = new VBox(12);
         content.setPadding(new Insets(20));
+        content.getStyleClass().add("dialog-body");
 
         TextArea contentArea = new TextArea();
         contentArea.setWrapText(true);
         contentArea.setPrefHeight(150);
         contentArea.setPromptText("请输入记忆内容");
-        contentArea.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        contentArea.getStyleClass().add("form-textarea");
 
         TextField tagsField = new TextField();
         tagsField.setPromptText("标签 (逗号分隔)");
-        tagsField.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        tagsField.getStyleClass().add("form-field");
 
-        content.getChildren().addAll(new Label("内容:"), contentArea, new Label("标签:"), tagsField);
+        HBox contentRow = new HBox(8);
+        contentRow.getStyleClass().add("form-row");
+        Label contentLabel = new Label("内容:");
+        contentLabel.getStyleClass().add("form-label");
+        contentRow.getChildren().addAll(contentLabel, contentArea);
+        contentArea.setMaxWidth(Double.MAX_VALUE);
+
+        HBox tagsRow = new HBox(8);
+        tagsRow.getStyleClass().add("form-row");
+        Label tagsLabel = new Label("标签:");
+        tagsLabel.getStyleClass().add("form-label");
+        tagsRow.getChildren().addAll(tagsLabel, tagsField);
+
+        content.getChildren().addAll(contentRow, tagsRow);
         dialogPane.setContent(content);
+
+        Button okBtn = (Button) dialogPane.lookupButton(ButtonType.OK);
+        okBtn.getStyleClass().add("btn-dialog-ok");
+        Button cancelBtn = (Button) dialogPane.lookupButton(ButtonType.CANCEL);
+        cancelBtn.getStyleClass().add("btn-dialog-cancel");
 
         dialog.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
@@ -915,22 +941,43 @@ public class MainController {
 
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialogPane.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+        dialogPane.getStyleClass().add("custom-dialog");
 
-        VBox content = new VBox(10);
+        VBox content = new VBox(12);
         content.setPadding(new Insets(20));
+        content.getStyleClass().add("dialog-body");
 
         TextArea contentArea = new TextArea();
         contentArea.setWrapText(true);
         contentArea.setPrefHeight(150);
         contentArea.setPromptText("请输入记忆内容");
-        contentArea.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        contentArea.getStyleClass().add("form-textarea");
 
         TextField tagsField = new TextField();
         tagsField.setPromptText("标签 (逗号分隔)");
-        tagsField.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        tagsField.getStyleClass().add("form-field");
 
-        content.getChildren().addAll(new Label("内容:"), contentArea, new Label("标签:"), tagsField);
+        HBox contentRow = new HBox(8);
+        contentRow.getStyleClass().add("form-row");
+        Label contentLabel = new Label("内容:");
+        contentLabel.getStyleClass().add("form-label");
+        contentRow.getChildren().addAll(contentLabel, contentArea);
+        contentArea.setMaxWidth(Double.MAX_VALUE);
+
+        HBox tagsRow = new HBox(8);
+        tagsRow.getStyleClass().add("form-row");
+        Label tagsLabel = new Label("标签:");
+        tagsLabel.getStyleClass().add("form-label");
+        tagsRow.getChildren().addAll(tagsLabel, tagsField);
+
+        content.getChildren().addAll(contentRow, tagsRow);
         dialogPane.setContent(content);
+
+        Button okBtn = (Button) dialogPane.lookupButton(ButtonType.OK);
+        okBtn.getStyleClass().add("btn-dialog-ok");
+        Button cancelBtn = (Button) dialogPane.lookupButton(ButtonType.CANCEL);
+        cancelBtn.getStyleClass().add("btn-dialog-cancel");
 
         dialog.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
@@ -1322,22 +1369,25 @@ public class MainController {
 
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialogPane.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+        dialogPane.getStyleClass().add("custom-dialog");
 
-        VBox content = new VBox(10);
+        VBox content = new VBox(12);
         content.setPadding(new Insets(20));
+        content.getStyleClass().add("dialog-body");
 
         TextField nameField = new TextField();
         nameField.setPromptText("规则名称");
-        nameField.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        nameField.getStyleClass().add("form-field");
 
         TextField ruleField = new TextField();
         ruleField.setPromptText("规则内容");
-        ruleField.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        ruleField.getStyleClass().add("form-field");
 
         TextArea descriptionArea = new TextArea();
         descriptionArea.setPromptText("规则描述");
         descriptionArea.setPrefHeight(80);
-        descriptionArea.setStyle("-fx-control-inner-background: #1e1e1e; -fx-text-fill: #d4d4d4;");
+        descriptionArea.getStyleClass().add("form-textarea");
 
         if (existingClause != null) {
             nameField.setText(existingClause.getName());
@@ -1345,13 +1395,33 @@ public class MainController {
             descriptionArea.setText(existingClause.getDescription());
         }
 
-        content.getChildren().addAll(
-                new Label("规则名称:"), nameField,
-                new Label("规则内容:"), ruleField,
-                new Label("规则描述:"), descriptionArea
-        );
+        HBox nameRow = new HBox(8);
+        nameRow.getStyleClass().add("form-row");
+        Label nameLabel = new Label("规则名称:");
+        nameLabel.getStyleClass().add("form-label");
+        nameRow.getChildren().addAll(nameLabel, nameField);
+
+        HBox ruleRow = new HBox(8);
+        ruleRow.getStyleClass().add("form-row");
+        Label ruleLabel = new Label("规则内容:");
+        ruleLabel.getStyleClass().add("form-label");
+        ruleRow.getChildren().addAll(ruleLabel, ruleField);
+
+        HBox descRow = new HBox(8);
+        descRow.getStyleClass().add("form-row");
+        Label descLabel = new Label("规则描述:");
+        descLabel.getStyleClass().add("form-label");
+        descRow.getChildren().addAll(descLabel, descriptionArea);
+        descriptionArea.setMaxWidth(Double.MAX_VALUE);
+
+        content.getChildren().addAll(nameRow, ruleRow, descRow);
 
         dialogPane.setContent(content);
+
+        Button okBtn = (Button) dialogPane.lookupButton(ButtonType.OK);
+        okBtn.getStyleClass().add("btn-dialog-ok");
+        Button cancelBtn = (Button) dialogPane.lookupButton(ButtonType.CANCEL);
+        cancelBtn.getStyleClass().add("btn-dialog-cancel");
 
         dialog.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
@@ -1391,17 +1461,34 @@ public class MainController {
     }
 
     private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("提示");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
+        Stage stage = new Stage();
+        stage.setTitle("提示");
+        stage.initStyle(StageStyle.UNDECORATED);
 
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.setStyle("-fx-background-color: #1e1e1e;");
-        dialogPane.lookupButton(ButtonType.OK).setStyle(
-            "-fx-background-color: #0e639c; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 6 16;"
-        );
+        VBox container = new VBox();
+        container.getStyleClass().add("custom-alert");
 
-        alert.showAndWait();
+        VBox content = new VBox();
+        content.getStyleClass().add("alert-content");
+        Label messageLabel = new Label(message);
+        messageLabel.getStyleClass().add("alert-message");
+        content.getChildren().add(messageLabel);
+
+        HBox footer = new HBox();
+        footer.setPadding(new Insets(12));
+        footer.setAlignment(Pos.CENTER);
+
+        Button okBtn = new Button("确定");
+        okBtn.getStyleClass().add("btn-alert-ok");
+        okBtn.setOnAction(e -> stage.close());
+        footer.getChildren().add(okBtn);
+
+        container.getChildren().addAll(content, footer);
+        container.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
+
+        Scene scene = new Scene(container, 320, 140);
+        stage.setScene(scene);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
     }
 }

@@ -11,4 +11,9 @@ public interface TrunkKernel {
     boolean isLoaded();
     String getKernelInfo();
     long getMemoryUsageBytes();
+    
+    String getKVCacheHandle();
+    void clearKVCache();
+    String cloneKVCache();
+    void restoreKVCache(String handle);
 }

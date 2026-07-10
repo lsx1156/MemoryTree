@@ -1,8 +1,8 @@
 # 记忆树 MemoryTree
 
-> 纯逻辑类脑AI框架 — V3.0 推理流水线架构规范参考实现
+> 纯逻辑类脑AI框架 — V3.1 运行时边界审计规范参考实现
 >
-> 版本：V3.0 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.0 推理流水线架构规范》
+> 版本：V3.1 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.1 运行时边界审计规范》
 
 ***
 
@@ -268,7 +268,7 @@ MemoryTree/
 
 ***
 
-## 九、V3.0 规范实现对比
+## 九、V3.1 规范实现对比
 
 ### 9.1 树干内核层（Trunk Kernel）
 
@@ -308,7 +308,7 @@ MemoryTree/
 | `build_index()` 接口             | ✅ 已实现 | 倒排索引构建，优化检索性能                                                      |
 | MemoryFragment 数据结构            | ✅ 已实现 | id/content/tags/createdAt/lastAccessedAt/accessCount/saliencyScore |
 | `set_heat()` 可选接口              | ✅ 已实现 | 通过 `saliencyScore` 字段                                              |
-| `decay_all_heat()` 可选接口        | ❌ 未实现 | 热度衰减未实现                                                            |
+| `decay_all_heat()` 可选接口        | ✅ 已实现 | 热度衰减，支持自定义衰减率                                                      |
 | 实现无关性                          | ✅ 已实现 | 接口与实现分离                                                            |
 
 ### 9.4 调度控制层（Scheduler Bus）
@@ -322,7 +322,7 @@ MemoryTree/
 | 内省推理控制   | ✅ 已实现   | `InferenceStateMachine` 完整状态流转 |
 | 契约仲裁控制   | ✅ 已实现   | 契约加载/逐条校验/违规处置                 |
 | 生命周期管理   | ✅ 已实现   | 状态隔离/终止清零                      |
-| 边界约束校验   | ⚠️ 部分实现 | 运行时审计未完全实现                     |
+| 边界约束校验   | ✅ 已实现 | `RuntimeBoundaryAuditor` 完整运行时审计 |
 
 ### 9.5 内省推理状态机
 
@@ -445,13 +445,21 @@ MemoryTree/
 
 | 未实现项                            | 规范章节    | 影响        | 计划   |
 | ------------------------------- | ------- | --------- | ---- |
-| `decay_all_heat()` 热度衰减         | 3.3.3   | 认知热度冷启动   | V3.1 |
-| KV 缓存真实句柄                       | 3.1.1   | 缓存复用效率    | V3.1 |
-| 运行时边界审计                         | 3.4.1   | 设计原则运行时审计 | V3.1 |
+| 无 | - | - | - |
 
 ***
 
-## 十一、V3.0 更新内容
+## 十一、V3.1 更新内容
+
+- ✅ 全局UI问题修正（统一弹窗样式、控件对齐、深色主题美化）
+- ✅ `decay_all_heat()` 热度衰减功能（支持自定义衰减率）
+- ✅ KV缓存真实句柄（`getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`）
+- ✅ 运行时边界审计（`RuntimeBoundaryAuditor` 设计原则审计+边界校验）
+- ✅ `MemoryEntry` 新增 `heat` 字段
+- ✅ `MemoryBackend` 新增 `decayAllHeat()` 接口
+- ✅ `TrunkKernel` 新增KV缓存句柄管理接口
+
+## 十二、V3.0 更新内容
 
 - ✅ V2.2 补全：`build_index()` 倒排索引重建（优化记忆检索性能）
 - ✅ V2.2 补全：`is_in_scope()` 领域范围检查（关键词匹配判断）

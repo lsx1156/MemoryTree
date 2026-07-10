@@ -35,7 +35,7 @@ echo.
 echo [3/4] 准备输入目录...
 if exist "target\jpackage-input" rmdir /s /q "target\jpackage-input"
 mkdir "target\jpackage-input"
-copy "target\memorytree-3.0.0.jar" "target\jpackage-input\"
+copy "target\memorytree-3.1.0.jar" "target\jpackage-input\"
 echo Done
 echo.
 
@@ -44,7 +44,7 @@ echo [4/4] 创建EXE...
     --type app-image ^
     --name MemoryTree ^
     --input target\jpackage-input ^
-    --main-jar memorytree-3.0.0.jar ^
+    --main-jar memorytree-3.1.0.jar ^
     --dest release ^
     --java-options "-Xmx4g" ^
     --java-options "-Xms512m" ^

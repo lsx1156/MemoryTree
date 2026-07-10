@@ -32,6 +32,8 @@ public class OllamaTrunkKernel implements TrunkKernel {
 
     private boolean loaded = false;
     private long loadTime = 0;
+    private String kvCacheHandle = null;
+    private Map<String, String> kvCacheStore = new HashMap<>();
 
     @Override
     public GenerateResult generate(String prompt, GenerateConfig config) {
@@ -307,5 +309,42 @@ public class OllamaTrunkKernel implements TrunkKernel {
             logits.put(i, tokenLogits);
         }
         return logits;
+    }
+
+    @Override
+    public String getKVCacheHandle() {
+        if (kvCacheHandle == null) {
+            kvCacheHandle = "kv_cache_" + System.currentTimeMillis() + "_" + 
+                    Long.toHexString(Double.doubleToLongBits(Math.random()));
+            kvCacheStore.put(kvCacheHandle, "active");
+        }
+        return kvCacheHandle;
+    }
+
+    @Override
+    public void clearKVCache() {
+        kvCacheHandle = null;
+        kvCacheStore.clear();
+        log.info("KV cache cleared");
+    }
+
+    @Override
+    public String cloneKVCache() {
+        String sourceHandle = getKVCacheHandle();
+        String cloneHandle = "kv_cache_clone_" + System.currentTimeMillis() + "_" +
+                Long.toHexString(Double.doubleToLongBits(Math.random()));
+        kvCacheStore.put(cloneHandle, sourceHandle);
+        log.info("KV cache cloned: {} -> {}", sourceHandle, cloneHandle);
+        return cloneHandle;
+    }
+
+    @Override
+    public void restoreKVCache(String handle) {
+        if (kvCacheStore.containsKey(handle)) {
+            kvCacheHandle = handle;
+            log.info("KV cache restored: {}", handle);
+        } else {
+            log.warn("KV cache handle not found: {}", handle);
+        }
     }
 }

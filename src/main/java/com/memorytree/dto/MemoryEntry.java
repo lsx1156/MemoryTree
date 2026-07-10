@@ -20,4 +20,5 @@ public class MemoryEntry {
     private LocalDateTime lastAccessedAt;
     private int accessCount;
     private double saliencyScore;
+    private double heat;
 }

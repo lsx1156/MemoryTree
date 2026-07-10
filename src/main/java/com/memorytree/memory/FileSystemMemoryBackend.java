@@ -5,6 +5,7 @@ import com.memorytree.dto.MemoryQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class FileSystemMemoryBackend implements MemoryBackend {
 
@@ -266,5 +268,20 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         double indexMatchRatio = (double) matchedIndexCount / queryWords.length;
         
         return scopeMatchRatio >= 0.3 || indexMatchRatio >= 0.5;
+    }
+
+    @Override
+    public void decayAllHeat(double decayRate) {
+        double effectiveRate = Math.max(0.0, Math.min(1.0, decayRate));
+        
+        for (MemoryEntry entry : memoryStore) {
+            entry.setHeat(entry.getHeat() * (1 - effectiveRate));
+            
+            if (entry.getHeat() < 0.01) {
+                entry.setHeat(0);
+            }
+        }
+        
+        log.info("Heat decayed for {} entries with rate {}", memoryStore.size(), effectiveRate);
     }
 }
