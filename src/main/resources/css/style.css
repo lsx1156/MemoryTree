@@ -156,8 +156,8 @@
 }
 
 .editor-tabpane .tab:selected {
-    -fx-background-color: #1e1e1e;
-    -fx-border-color: #0e639c;
+    -fx-background-color: rgba(14, 99, 156, 0.2);
+    -fx-border-color: #4fc1ff;
 }
 
 .editor-tabpane .tab-label {
@@ -166,7 +166,8 @@
 }
 
 .editor-tabpane .tab:selected .tab-label {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #4fc1ff;
+    -fx-font-weight: 600;
 }
 
 .editor-tabpane .tab-content-area {
