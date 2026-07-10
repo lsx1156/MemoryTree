@@ -258,7 +258,8 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         try {
             objectMapper.writeValue(new File(MEMORY_FILE), memoryStore);
         } catch (IOException e) {
-            // ignore
+            log.error("Failed to persist memory store to file: {}", MEMORY_FILE, e);
+            throw new RuntimeException("Memory persistence failed: " + e.getMessage(), e);
         }
     }
 
