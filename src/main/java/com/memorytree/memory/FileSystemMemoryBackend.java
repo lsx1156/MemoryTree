@@ -153,10 +153,14 @@ public class FileSystemMemoryBackend implements MemoryBackend {
         }
         entry.setCreatedAt(LocalDateTime.now());
         entry.setLastAccessedAt(LocalDateTime.now());
-        
+
+        if (entry.getHeat() == 0.0 && entry.getSaliencyScore() > 0) {
+            entry.setHeat(entry.getSaliencyScore());
+        }
+
         if (entry.getEmbedding() == null || entry.getEmbedding().isEmpty()) {
             entry.setEmbedding(embeddingService.generateEmbedding(entry.getContent()));
-            log.debug("Generated embedding for memory entry: id={}, dimensions={}", 
+            log.debug("Generated embedding for memory entry: id={}, dimensions={}",
                     entry.getId(), entry.getEmbedding().size());
         }
         

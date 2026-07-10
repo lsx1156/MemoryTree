@@ -19,10 +19,10 @@ import java.util.Random;
 @Service
 public class EmbeddingService {
 
-    @Value("${spring.ai.ollama.base-url:http://localhost:11434}")
+    @Value("${memorytree.ollama.base-url:http://localhost:11434}")
     private String ollamaBaseUrl;
 
-    @Value("${spring.ai.ollama.embedding.model:qwen2.5:7b}")
+    @Value("${memorytree.ollama.embedding.model:qwen2.5:7b}")
     private String embeddingModel;
 
     @Value("${memorytree.embedding.enabled:true}")

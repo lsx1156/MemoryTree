@@ -20,10 +20,10 @@ import java.util.function.Consumer;
 @Component
 public class OllamaTrunkKernel implements TrunkKernel {
 
-    @Value("${spring.ai.ollama.chat.model:qwen2.5:7b}")
+    @Value("${memorytree.ollama.chat.model:qwen2.5:7b}")
     private String modelName;
 
-    @Value("${spring.ai.ollama.base-url:http://localhost:11434}")
+    @Value("${memorytree.ollama.base-url:http://localhost:11434}")
     private String baseUrl;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -32,6 +32,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
 
     private boolean loaded = false;
     private long loadTime = 0;
+    // MOCK: Ollama API does not expose real KV cache handles. This stores placeholder flags for interface compliance.
     private String kvCacheHandle = null;
     private Map<String, String> kvCacheStore = new HashMap<>();
 
@@ -84,20 +85,28 @@ public class OllamaTrunkKernel implements TrunkKernel {
             }
 
             long endTime = System.currentTimeMillis();
-            log.info("Ollama inference completed in {}ms, text length: {}", endTime - startTime, generatedText.length());
+            long ollamaTotalDuration = extractLongField(responseBody, "total_duration");
+            long ollamaEvalCount = extractLongField(responseBody, "eval_count");
+            long inferenceTimeMs = ollamaTotalDuration > 0 ? ollamaTotalDuration / 1_000_000 : (endTime - startTime);
+            log.info("Ollama inference completed in {}ms, tokens: {}, text length: {}", inferenceTimeMs, ollamaEvalCount, generatedText.length());
 
-            List<String> tokens = tokenize(generatedText);
+            List<String> tokens = ollamaEvalCount > 0
+                    ? java.util.stream.IntStream.range(0, (int) ollamaEvalCount).mapToObj(i -> "tok_" + i).collect(java.util.stream.Collectors.toList())
+                    : tokenize(generatedText);
             Map<Integer, double[]> logits = generateMockLogits(tokens.size());
+
+            double confidence = calculateConfidence(generatedText);
+            double reward = calculateReward(generatedText, ollamaEvalCount, inferenceTimeMs);
 
             return GenerateResult.builder()
                     .text(generatedText)
                     .content(generatedText)
                     .tokens(tokens)
                     .logits(logits)
-                    .inferenceTimeMs(endTime - startTime)
-                    .confidenceScore(calculateConfidence(generatedText))
-                    .confidence(calculateConfidence(generatedText))
-                    .reward(Math.random() * 0.5 + 0.5)
+                    .inferenceTimeMs(inferenceTimeMs)
+                    .confidenceScore(confidence)
+                    .confidence(confidence)
+                    .reward(reward)
                     .kvCacheUsed(config.isUseKVCache())
                     .build();
 
@@ -175,15 +184,18 @@ public class OllamaTrunkKernel implements TrunkKernel {
                 List<String> tokens = tokenize(generatedText);
                 Map<Integer, double[]> logits = generateMockLogits(tokens.size());
 
+                double confidence = calculateConfidence(generatedText);
+                double reward = calculateReward(generatedText, tokens.size(), endTime - startTime);
+
                 return GenerateResult.builder()
                         .text(generatedText)
                         .content(generatedText)
                         .tokens(tokens)
                         .logits(logits)
                         .inferenceTimeMs(endTime - startTime)
-                        .confidenceScore(0.9 + Math.random() * 0.08)
-                        .confidence(0.9 + Math.random() * 0.08)
-                        .reward(Math.random() * 0.5 + 0.5)
+                        .confidenceScore(confidence)
+                        .confidence(confidence)
+                        .reward(reward)
                         .kvCacheUsed(config.isUseKVCache())
                         .build();
 
@@ -192,6 +204,41 @@ public class OllamaTrunkKernel implements TrunkKernel {
                 throw new RuntimeException("推理失败: " + e.getMessage(), e);
             }
         });
+    }
+
+    private long extractLongField(String json, String fieldName) {
+        String marker = "\"" + fieldName + "\":";
+        int start = json.indexOf(marker);
+        if (start < 0) return 0;
+        start += marker.length();
+        StringBuilder sb = new StringBuilder();
+        for (int i = start; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c >= '0' && c <= '9') {
+                sb.append(c);
+            } else if (sb.length() > 0) {
+                break;
+            }
+        }
+        try {
+            return sb.length() > 0 ? Long.parseLong(sb.toString()) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private double calculateReward(String text, long tokenCount, long inferenceTimeMs) {
+        double reward = 0.5;
+        if (text != null && !text.isEmpty()) {
+            reward += Math.min(0.2, text.length() / 1000.0);
+        }
+        if (tokenCount > 50) {
+            reward += 0.15;
+        }
+        if (inferenceTimeMs > 0 && inferenceTimeMs < 30000) {
+            reward += 0.15;
+        }
+        return Math.min(1.0, Math.max(0.5, reward));
     }
 
     private String extractResponseText(String json) {
@@ -253,6 +300,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
         return sb.toString();
     }
 
+    // MOCK: Returns placeholder logits. Ollama API does not expose real logits.
     @Override
     public double[] getLogits(String prompt) {
         double[] logits = new double[50257];
@@ -291,7 +339,8 @@ public class OllamaTrunkKernel implements TrunkKernel {
 
     @Override
     public long getMemoryUsageBytes() {
-        return 4L * 1024 * 1024 * 1024;
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory() - runtime.freeMemory();
     }
 
     private double calculateConfidence(String text) {
@@ -332,6 +381,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
         return Arrays.asList(text.split("\\s+"));
     }
 
+    // MOCK: Ollama API does not expose real logits. This generates placeholder data for interface compliance.
     private Map<Integer, double[]> generateMockLogits(int tokenCount) {
         Map<Integer, double[]> logits = new HashMap<>();
         Random random = new Random();

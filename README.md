@@ -792,12 +792,14 @@ MemoryTree/
 
 | 项目 | 状态 | 说明 | 实现文件 |
 |------|------|------|---------|
-| **KV缓存句柄** | ⚠️ 模拟实现 | 仅提供接口定义，`kvCacheStore` 为 `HashMap<String,String>` 存储标志位，未操作真实 KV cache | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **tokens/logits** | ⚠️ 模拟实现 | `logits` 为随机生成的 Mock 数据，非模型真实输出 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **置信度计算** | ⚠️ 关键词匹配 | `calculateConfidence()` 基于"因此""所以"等中文关键词打分，非模型真实置信度；流式版本为 `0.9 + random()` | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **reward 评分** | ⚠️ 随机生成 | `Math.random() * 0.5 + 0.5` 纯随机数，非真实奖励模型输出 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
-| **内存占用审计** | ⚠️ 硬编码 | 审计阈值为硬编码常量，非动态计算 | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
-| **鲁棒性测试** | ❌ 无自动化测试 | README 中的 12 项测试为**设计标准**，暂无 JUnit/TestNG 自动化测试代码 | - |
+| **KV缓存句柄** | ⚠️ 模拟实现 | Ollama API 不暴露 KV cache，代码中用 `HashMap<String,String>` 存储标志位，已明确标注 `// MOCK` 注释 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **logits** | ⚠️ 模拟实现 | Ollama API 不暴露 logits，`generateMockLogits()` 生成占位数据，已明确标注 `// MOCK` 注释 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **置信度计算** | ⚠️ 关键词启发式 | `calculateConfidence()` 基于"因此""推导""证据"等中文关键词打分，同步和流式版本统一使用此方法 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **reward 评分** | ⚠️ 质量启发式 | `calculateReward()` 基于响应长度、token 数量、推理耗时计算，非纯随机数 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **内存占用** | ✅ 真实值 | `Runtime.getRuntime().totalMemory() - freeMemory()` 获取 JVM 实际堆内存使用 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **推理耗时** | ✅ 真实值 | 从 Ollama 响应 JSON 解析 `total_duration` 字段（纳秒转毫秒） | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **Token 数量** | ✅ 真实值 | 从 Ollama 响应 JSON 解析 `eval_count` 字段 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **鲁棒性测试** | ✅ 26 项单元测试 | 覆盖 EmbeddingService、FileSystemMemoryBackend、DefaultContractArbiter 核心路径 | [src/test/](file:///e:/AI/MemoryTree/src/test/java/com/memorytree/) |
 | **逻辑校验 (score_logic)** | ⚠️ 部分实现 | 基于关键词和规则的简单校验，非真实逻辑推理验证 | [DefaultContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java) |
 | **记忆固化 (save)** | ❌ 未实现 | `MemoryBackend` 接口定义了 `save()` 但部分后端未完整实现 | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java) |
 | **向量检索** | ✅ 已实现 | 基于 Ollama Embedding API 的语义搜索，每个记忆条目包含 embedding 字段（4096维向量） | [EmbeddingService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/EmbeddingService.java) |
@@ -805,15 +807,43 @@ MemoryTree/
 **核心真实功能：**
 - ✅ HTTP 调用 Ollama `/api/generate` 进行推理
 - ✅ 流式推理 (`generateAsync`) 逐行处理
+- ✅ 从 Ollama 响应解析真实指标（`eval_count`、`total_duration`）
 - ✅ 多核并行调度（线程池 + Future）
 - ✅ 硬件自适应检测（CPU核心数、内存大小）
+- ✅ JVM 内存实时监控（`Runtime.getRuntime()`）
 - ✅ 工作记忆与持久记忆（JSON文件存储）
 - ✅ 契约仲裁（规则匹配 + 一致性检查）
+- ✅ 全局异常处理（Ollama 不可用、超时、连接拒绝）
 - ✅ JavaFX 图形界面
+- ✅ 26 项 JUnit 5 单元测试覆盖核心路径
 
 ***
 
 ## 十三、版本更新历史
+
+### V3.1.2（深度审核整改）- 2026-07-11
+
+**P0 阻塞性问题修复：**
+
+| 修复项 | 说明 | 影响文件 |
+|-------|------|---------|
+| **删除项目目录旧 memory_store.json** | `E:\AI\MemoryTree\data\memory\memory_store.json` 仍为旧格式（数组时间戳、无 embedding/heat），已删除 | - |
+| **添加 26 项单元测试** | 创建 `src/test/java/com/memorytree/` 目录，覆盖 EmbeddingService（8项）、FileSystemMemoryBackend（10项）、DefaultContractArbiter（8项）核心路径 | [EmbeddingServiceTest.java](file:///e:/AI/MemoryTree/src/test/java/com/memorytree/memory/EmbeddingServiceTest.java)、[FileSystemMemoryBackendTest.java](file:///e:/AI/MemoryTree/src/test/java/com/memorytree/memory/FileSystemMemoryBackendTest.java)、[DefaultContractArbiterTest.java](file:///e:/AI/MemoryTree/src/test/java/com/memorytree/arbiter/DefaultContractArbiterTest.java) |
+| **修复 store() 未初始化 heat** | `store()` 方法新增逻辑：heat 为 0 且 saliencyScore > 0 时从 saliencyScore 初始化 heat | [FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
+
+**P1 高优先级问题修复：**
+
+| 修复项 | 说明 | 影响文件 |
+|-------|------|---------|
+| **清理 application.yml spring-ai 残留** | `spring.ai.ollama` 迁移至 `memorytree.ollama` 自定义命名空间，移除 `org.springframework.ai` 日志配置，同步修改 @Value 路径 | [application.yml](file:///e:/AI/MemoryTree/src/main/resources/application.yml)、[EmbeddingService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/EmbeddingService.java)、[OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **添加全局异常处理** | 新增 `GlobalExceptionHandler` 组件，统一处理 Ollama 不可用、连接拒绝、超时等异常 | [GlobalExceptionHandler.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/config/GlobalExceptionHandler.java) |
+| **提取 Ollama 真实指标** | 从 `/api/generate` 响应解析 `eval_count`（真实 token 数）、`total_duration`（真实推理耗时），替代 mock 值 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **reward 改为质量启发式** | `calculateReward()` 基于响应长度、token 数量、推理耗时计算，替代 `Math.random()` | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **流式置信度统一** | 流式版本从 `0.9 + Math.random() * 0.08` 改为与同步版本相同的 `calculateConfidence()` 关键词启发式 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **内存占用改为真实值** | 从硬编码 `4L * 1024 * 1024 * 1024` 改为 `Runtime.getRuntime().totalMemory() - freeMemory()` | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **mock 项明确标注** | logits 和 KV cache 添加 `// MOCK` 注释，说明 Ollama API 不暴露这些数据 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+
+---
 
 ### V3.1.1（审核整改）- 2026-07-11
 
