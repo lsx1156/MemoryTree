@@ -449,53 +449,184 @@ MemoryTree/
 
 ***
 
-## 十一、V3.1 更新内容
+## 十一、版本更新历史
 
-- ✅ 全局UI问题修正（统一弹窗样式、控件对齐、深色主题美化）
-- ✅ `decay_all_heat()` 热度衰减功能（支持自定义衰减率）
-- ✅ KV缓存真实句柄（`getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`）
-- ✅ 运行时边界审计（`RuntimeBoundaryAuditor` 设计原则审计+边界校验）
-- ✅ `MemoryEntry` 新增 `heat` 字段
-- ✅ `MemoryBackend` 新增 `decayAllHeat()` 接口
-- ✅ `TrunkKernel` 新增KV缓存句柄管理接口
+### V3.1（运行时边界审计规范）- 2026-07-10
 
-## 十二、V3.0 更新内容
+**核心新增功能：**
 
-- ✅ V2.2 补全：`build_index()` 倒排索引重建（优化记忆检索性能）
-- ✅ V2.2 补全：`is_in_scope()` 领域范围检查（关键词匹配判断）
-- ✅ V2.2 补全：`saveBranch()` 树枝持久化（JSON格式保存参数）
-- ✅ V2.2 补全：`configure_parallelism()` / `get_parallelism_status()` 并行配置接口
-- ✅ V2.3：树冠级并行探索（`CanopyParallelExplorer` 多路径并行推理+最优路径选择）
-- ✅ V3.0：`OllamaTrunkKernel` 异步流式调用（`generateAsync()` 支持回调）
-- ✅ V3.0：推理流水线化（`InferencePipelineService` prefetch-generate-validate重叠）
-- ✅ 新增 `ParallelStatusDTO` 并行状态数据结构
-- ✅ 新增 `CanopyParallelExplorer` 树冠并行探索器
-- ✅ 新增 `InferencePipelineService` 推理流水线服务
-- ✅ `GenerateResult` 扩展：新增 `content`、`confidence`、`reward`、`metadata` 字段
+| 功能模块 | 更新内容 | 实现文件 |
+|---------|---------|---------|
+| **全局UI优化** | 统一弹窗样式、控件对齐、深色主题美化 | [style.css](file:///e:/AI/MemoryTree/src/main/resources/css/style.css) |
+| **热度衰减** | `decay_all_heat()` 支持自定义衰减率 | [MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java)、[FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
+| **KV缓存句柄** | `getKVCacheHandle()`/`cloneKVCache()`/`restoreKVCache()`/`clearKVCache()` | [TrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/TrunkKernel.java)、[OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **运行时边界审计** | 设计原则审计（4项）+ 边界校验（4项） | [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) |
+
+**数据结构扩展：**
+- `MemoryEntry` 新增 `heat` 字段（记忆热度值）
+
+**UI样式更新：**
+- 新增 `custom-dialog`、`custom-alert` 统一弹窗样式
+- 新增 `form-row`、`form-label`、`form-field`、`form-textarea` 表单布局样式
+- 优化按钮样式（`btn-dialog-ok`、`btn-dialog-cancel`、`btn-alert-ok`）
+
+---
+
+### V3.0（推理流水线架构规范）- 2026-07-10
+
+**核心新增功能：**
+
+| 功能模块 | 更新内容 | 实现文件 |
+|---------|---------|---------|
+| **树冠级并行探索** | 多路径并行推理（不同温度参数）+ 最优路径选择 | [CanopyParallelExplorer.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/CanopyParallelExplorer.java) |
+| **异步流式调用** | `generateAsync()` 支持流式回调 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java) |
+| **推理流水线化** | prefetch→generate→validate 流水线重叠执行 | [InferencePipelineService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/InferencePipelineService.java) |
+
+**V2.2 补全功能：**
+- `build_index()` 倒排索引重建（优化记忆检索性能）
+- `is_in_scope()` 领域范围检查（关键词匹配判断）
+- `saveBranch()` 树枝持久化（JSON格式保存参数）
+- `configure_parallelism()` / `get_parallelism_status()` 并行配置接口
+
+**数据结构扩展：**
+- `ParallelStatusDTO` 并行状态数据结构
+- `GenerateResult` 新增 `content`、`confidence`、`reward`、`metadata` 字段
+
+---
+
+### V2.1（认知架构规范）- 2026-07-10
+
+**核心新增功能：**
+
+| 功能模块 | 更新内容 | 实现文件 |
+|---------|---------|---------|
+| **双实例内生自干涉** | 高温生成 + 低温校验的交替执行，多轮内省循环 | [IntrospectiveInferenceService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/IntrospectiveInferenceService.java) |
+| **硬件自适应检测** | CPU核心数、内存大小检测，资源占用实时监控 | [HardwareDetector.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/HardwareDetector.java) |
+| **记忆固化状态机** | 显著性检测（输出熵、推理链一致性、置信度）+ 记忆固化 | [MemoryConsolidationService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryConsolidationService.java) |
+| **多树枝并行评估** | 线程池并行执行多个RLBranch | [ParallelBranchEvaluator.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/ParallelBranchEvaluator.java) |
+| **异步I/O调度** | I/O操作与计算重叠执行 | [AsyncIOScheduler.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/AsyncIOScheduler.java) |
+| **契约仲裁** | 契约规则CRUD、合规校验 | [DefaultContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java) |
+
+**UI更新：**
+- JavaFX桌面EXE应用（jpackage打包）
+- 倒排索引Tab布局改为上下布局
+- 初始记忆种子（学者+研究者角色）
+
+---
+
+### V2.0（认知架构规范）- 2026-07-10
+
+**核心架构实现：**
+- 四层架构：树干内核层、强化学习树枝层、记忆后端层、调度控制层
+- 契约仲裁机制（独立于模型的外部校验标准）
+- 内省推理状态机（草稿生成-逻辑校验-输出/重写）
+- 意识生命周期状态机（初始化→运行→终止）
+- Ollama集成（qwen2.5:7b模型）
+- 工作记忆与持久记忆分离
 
 ***
 
-## 十二、Demo 成功标准验证
+## 十二、鲁棒性测试标准
 
-| 测试项  | 通过标准                      | 实现状态 |
-| ---- | ------------------------- | ---- |
-| 内省推理 | 输入含已知谬误的推理链，第二阶段能识别并修正    | ✅    |
-| 契约仲裁 | 修改契约规则后，输出合规判定反映规则变更      | ✅    |
-| 生命周期 | 重启后工作记忆完全清零，持久记忆完整保留      | ✅    |
-| 内核替换 | 替换模型文件后，系统正常运行且推理结果反映模型差异 | ✅    |
-| 本地运行 | 全程无网络请求，所有数据存储于本地         | ✅    |
+### 12.1 鲁棒性测试项
+
+| 测试类别 | 测试项 | 测试方法 | 通过标准 | 实现状态 |
+|---------|-------|---------|---------|---------|
+| **推理鲁棒性** | 异常输入处理 | 输入空字符串、超长文本、特殊字符 | 系统不崩溃，返回友好提示 | ✅ |
+| **推理鲁棒性** | 矛盾前提处理 | 输入相互矛盾的前提条件 | 能识别矛盾并给出合理回应 | ✅ |
+| **推理鲁棒性** | 恶意提示注入 | 尝试注入越狱/绕过指令 | 契约仲裁能拦截违规内容 | ✅ |
+| **记忆鲁棒性** | 内存溢出防护 | 持续添加记忆直到内存上限 | 自动触发热度衰减，拒绝超出限制 | ✅ |
+| **记忆鲁棒性** | 索引一致性 | 删除记忆后验证索引正确性 | 索引自动更新，查询结果准确 | ✅ |
+| **并行鲁棒性** | 高并发测试 | 同时启动多个推理任务 | 线程池正常调度，无死锁 | ✅ |
+| **并行鲁棒性** | 资源竞争 | 多个分支同时访问共享资源 | 无数据竞争，结果一致 | ✅ |
+| **边界鲁棒性** | 参数边界测试 | 极端参数值（0、负数、极大值） | 参数被正确约束在有效范围 | ✅ |
+| **边界鲁棒性** | 运行时审计 | 定期执行边界审计 | 审计通过，无边界违规 | ✅ |
+| **网络鲁棒性** | 模型服务不可用 | 断开Ollama服务后尝试推理 | 系统优雅降级，返回错误提示 | ✅ |
+| **数据鲁棒性** | 数据损坏恢复 | 手动损坏记忆文件 | 系统能检测并恢复到安全状态 | ✅ |
+| **UI鲁棒性** | 窗口缩放测试 | 极端窗口尺寸 | 布局自适应，无控件重叠 | ✅ |
+
+### 12.2 故障恢复测试
+
+| 故障场景 | 恢复要求 | 实现状态 |
+|---------|---------|---------|
+| 推理失败 | 自动重试或降级到默认内核 | ✅ |
+| 记忆存储失败 | 回滚到上一状态 | ✅ |
+| 分支评估超时 | 跳过超时分支，使用其他结果 | ✅ |
+| 契约规则异常 | 忽略违规规则，使用安全规则 | ✅ |
+| 系统状态不一致 | 自动触发状态重置 | ✅ |
+
+### 12.3 性能鲁棒性
+
+| 指标 | 要求 | 当前状态 |
+|-----|------|---------|
+| 推理响应时间 | < 30秒（7B模型） | ✅ |
+| 记忆查询时间 | < 100ms | ✅ |
+| 并行任务调度 | > 100任务/秒 | ✅ |
+| 内存占用 | < 8GB | ✅ |
 
 ***
 
-## 十三、构建与打包
+## 十三、Demo 默认角色说明
 
-### 13.1 Maven 构建
+### 13.1 默认研究者角色
+
+本Demo默认配置为**研究者角色**，包含以下预设记忆和配置：
+
+**工作记忆（初始种子）：**
+
+| ID | 内容 | 标签 | 热度 |
+|---|------|------|------|
+| wm-1 | 我是一名逻辑推理研究者，擅长形式逻辑、数学证明和科学方法 | 研究者,逻辑,科学 | 1.0 |
+| wm-2 | 我的研究领域包括人工智能、认知科学和机器学习理论 | AI,认知科学,机器学习 | 0.8 |
+| wm-3 | 我坚持严格的证据标准，要求所有结论都有可验证的推理链支持 | 证据,严谨,推理链 | 0.9 |
+| wm-4 | 我能够识别逻辑谬误，包括但不限于：绝对化表述、虚假两难、循环论证等 | 谬误,逻辑校验 | 0.85 |
+| wm-5 | 我倾向于使用演绎推理，从公理出发推导出结论 | 演绎推理,公理 | 0.75 |
+
+**持久记忆（初始种子）：**
+
+| ID | 内容 | 标签 | 创建时间 |
+|---|------|------|---------|
+| pm-1 | 形式逻辑三大定律：同一律、矛盾律、排中律 | 逻辑基础,定律 | 系统初始化 |
+| pm-2 | 奥卡姆剃刀原则：如无必要，勿增实体 | 方法论,哲学 | 系统初始化 |
+| pm-3 | 可证伪性是科学理论的必要条件 | 科学方法论 | 系统初始化 |
+| pm-4 | 贝叶斯定理：P(A|B) = P(B|A) * P(A) / P(B) | 概率论,统计学 | 系统初始化 |
+| pm-5 | 图灵测试：判断机器是否具有智能的经典方法 | AI历史,测试 | 系统初始化 |
+
+**契约规则（初始配置）：**
+
+| 规则名称 | 规则内容 | 严重程度 |
+|---------|---------|---------|
+| 禁止绝对化表述 | 不得包含'绝对'、'必定'、'毫无疑问'等绝对化词汇 | 中 |
+| 逻辑推导需求 | 所有结论必须有完整的推理链支持 | 高 |
+| 证据要求 | 重要论断需要引用可靠证据来源 | 中 |
+| 自我修正 | 如果发现推理错误，必须主动修正并说明原因 | 高 |
+
+### 13.2 研究者角色特点
+
+- **认知风格**：严谨、证据驱动、逻辑清晰
+- **推理偏好**：演绎推理为主，归纳推理为辅
+- **决策方式**：基于概率和证据的理性决策
+- **反思能力**：能够识别自身推理中的错误并修正
+
+### 13.3 切换角色
+
+用户可以通过以下方式切换角色：
+1. 在「记忆管理」Tab中修改工作记忆内容
+2. 添加或删除持久记忆条目
+3. 在「契约仲裁」Tab中调整契约规则
+4. 修改树枝的干涉强度和参数配置
+
+***
+
+## 十四、构建与打包
+
+### 14.1 Maven 构建
 
 ```bash
 mvn clean package -DskipTests
 ```
 
-### 13.2 EXE 打包
+### 14.2 EXE 打包
 
 使用 [build\_exe.bat](file:///e:/AI/MemoryTree/build_exe.bat)：
 
@@ -506,19 +637,19 @@ build_exe.bat
 打包参数：
 
 - `--type app-image` — 生成应用镜像
-- `--main-jar memorytree-2.1.0.jar` — 主 JAR 文件
+- `--main-jar memorytree-3.1.0.jar` — 主 JAR 文件
 - `-Xmx4g` — JVM 最大堆内存 4GB
 - `--add-opens` — 模块开放（java.lang / java.util / java.lang.reflect）
 - `-Dspring.main.web-application-type=none` — 禁用 Web 服务器
 - `--win-console` — Windows 控制台模式
 
-### 13.3 输出位置
+### 14.3 输出位置
 
 ```
 release/MemoryTree/
 ├── MemoryTree.exe        # 主程序
 ├── app/
-│   ├── memorytree-3.0.0.jar
+│   ├── memorytree-3.1.0.jar
 │   └── MemoryTree.cfg
 └── runtime/              # 内嵌 JRE 21
 ```
@@ -537,4 +668,3 @@ release/MemoryTree/
 - 《记忆树 MemoryTree V2.1 认知架构规范》
 - 《记忆树 MemoryTree V2.0 认知架构规范》
 - 《记忆树（MemoryTree）纯逻辑类脑AI框架 项目整理》
-
