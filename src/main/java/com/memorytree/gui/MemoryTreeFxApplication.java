@@ -1,11 +1,13 @@
 package com.memorytree.gui;
 
 import com.memorytree.MemoryTreeApplication;
+import com.memorytree.config.GlobalExceptionHandler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
@@ -25,6 +27,18 @@ public class MemoryTreeFxApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        GlobalExceptionHandler exceptionHandler = springContext.getBean(GlobalExceptionHandler.class);
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            Platform.runLater(() -> {
+                String errorMsg = exceptionHandler.handle(throwable);
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("错误");
+                alert.setHeaderText(null);
+                alert.setContentText(errorMsg);
+                alert.showAndWait();
+            });
+        });
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainWindow.fxml"));
         loader.setControllerFactory(springContext::getBean);
         

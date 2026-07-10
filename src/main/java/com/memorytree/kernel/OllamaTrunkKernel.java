@@ -1,5 +1,6 @@
 package com.memorytree.kernel;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.memorytree.dto.GenerateConfig;
 import com.memorytree.dto.GenerateResult;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,8 @@ public class OllamaTrunkKernel implements TrunkKernel {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private boolean loaded = false;
     private long loadTime = 0;
     // MOCK: Ollama API does not expose real KV cache handles. This stores placeholder flags for interface compliance.
@@ -48,14 +51,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
             double topP = config.getTopP() > 0 ? config.getTopP() : 0.9;
             int numPredict = config.getMaxTokens() > 0 ? config.getMaxTokens() : 2048;
 
-            String requestJson = String.format(
-                    "{\"model\":\"%s\",\"prompt\":%s,\"stream\":false,\"options\":{\"temperature\":%s,\"top_p\":%s,\"num_predict\":%d}}",
-                    modelName,
-                    jsonEscape(fullPrompt),
-                    temperature,
-                    topP,
-                    numPredict
-            );
+            String requestJson = buildRequestJson(fullPrompt, temperature, topP, numPredict, false);
 
             log.info("Calling Ollama API: model={}, baseUrl={}", modelName, baseUrl);
             log.debug("Request body: {}", requestJson);
@@ -132,14 +128,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
                 double topP = config.getTopP() > 0 ? config.getTopP() : 0.9;
                 int numPredict = config.getMaxTokens() > 0 ? config.getMaxTokens() : 2048;
 
-                String requestJson = String.format(
-                        "{\"model\":\"%s\",\"prompt\":%s,\"stream\":true,\"options\":{\"temperature\":%s,\"top_p\":%s,\"num_predict\":%d}}",
-                        modelName,
-                        jsonEscape(fullPrompt),
-                        temperature,
-                        topP,
-                        numPredict
-                );
+                String requestJson = buildRequestJson(fullPrompt, temperature, topP, numPredict, true);
 
                 log.info("Calling Ollama API (streaming): model={}", modelName);
 
@@ -204,6 +193,25 @@ public class OllamaTrunkKernel implements TrunkKernel {
                 throw new RuntimeException("推理失败: " + e.getMessage(), e);
             }
         });
+    }
+
+    private String buildRequestJson(String prompt, double temperature, double topP, int numPredict, boolean stream) {
+        try {
+            Map<String, Object> request = new HashMap<>();
+            request.put("model", modelName);
+            request.put("prompt", prompt);
+            request.put("stream", stream);
+
+            Map<String, Object> options = new HashMap<>();
+            options.put("temperature", temperature);
+            options.put("top_p", topP);
+            options.put("num_predict", numPredict);
+            request.put("options", options);
+
+            return objectMapper.writeValueAsString(request);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to build request JSON", e);
+        }
     }
 
     private long extractLongField(String json, String fieldName) {
@@ -274,29 +282,6 @@ public class OllamaTrunkKernel implements TrunkKernel {
                 sb.append(c);
             }
         }
-        return sb.toString();
-    }
-
-    private String jsonEscape(String text) {
-        StringBuilder sb = new StringBuilder("\"");
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            switch (c) {
-                case '"' -> sb.append("\\\"");
-                case '\\' -> sb.append("\\\\");
-                case '\n' -> sb.append("\\n");
-                case '\r' -> sb.append("\\r");
-                case '\t' -> sb.append("\\t");
-                default -> {
-                    if (c < 32) {
-                        sb.append(String.format("\\u%04x", (int) c));
-                    } else {
-                        sb.append(c);
-                    }
-                }
-            }
-        }
-        sb.append("\"");
         return sb.toString();
     }
 

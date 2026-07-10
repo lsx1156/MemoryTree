@@ -1,5 +1,6 @@
 package com.memorytree.dto;
 
+import com.memorytree.enums.SeverityLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,6 @@ public class ContractClause {
     private String rule;
     private String description;
     private boolean failSafe;
-    private double severity;
+    private SeverityLevel severity;
     private boolean enabled;
 }

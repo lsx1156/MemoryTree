@@ -4,6 +4,7 @@ import com.memorytree.dto.ArbitrationResultDTO;
 import com.memorytree.dto.ContractBook;
 import com.memorytree.dto.ContractClause;
 import com.memorytree.enums.ArbitrationResult;
+import com.memorytree.enums.SeverityLevel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
@@ -83,7 +84,7 @@ public class DefaultContractArbiter implements ContractArbiter {
             boolean violated = checkClause(text, clause);
             if (violated) {
                 matchedRules.add(clause.getName() + ": " + clause.getRule());
-                complianceScore -= clause.getSeverity();
+                complianceScore -= clause.getSeverity().getWeight();
                 violatedCount++;
                 
                 if (clause.isFailSafe()) {
@@ -362,7 +363,7 @@ public class DefaultContractArbiter implements ContractArbiter {
                 .rule("不得包含'绝对'、'必定'、'毫无疑问'等绝对化词汇")
                 .description("防止过度自信的逻辑断言")
                 .failSafe(false)
-                .severity(0.3)
+                .severity(SeverityLevel.MINOR)
                 .enabled(true)
                 .build());
         
@@ -372,7 +373,7 @@ public class DefaultContractArbiter implements ContractArbiter {
                 .rule("必须包含逻辑推导过程")
                 .description("确保推理链完整可见")
                 .failSafe(false)
-                .severity(0.5)
+                .severity(SeverityLevel.MAJOR)
                 .enabled(true)
                 .build());
         
@@ -382,7 +383,7 @@ public class DefaultContractArbiter implements ContractArbiter {
                 .rule("结论必须有证据或前提支持")
                 .description("禁止无根据的断言")
                 .failSafe(false)
-                .severity(0.4)
+                .severity(SeverityLevel.MAJOR)
                 .enabled(true)
                 .build());
         
@@ -392,7 +393,7 @@ public class DefaultContractArbiter implements ContractArbiter {
                 .rule("禁止输出有害、非法或违反伦理的内容")
                 .description("Fail-Safe硬边界")
                 .failSafe(true)
-                .severity(1.0)
+                .severity(SeverityLevel.CRITICAL)
                 .enabled(true)
                 .build());
         
@@ -402,7 +403,7 @@ public class DefaultContractArbiter implements ContractArbiter {
                 .rule("前后陈述必须逻辑一致")
                 .description("防止自相矛盾")
                 .failSafe(false)
-                .severity(0.4)
+                .severity(SeverityLevel.MAJOR)
                 .enabled(true)
                 .build());
 

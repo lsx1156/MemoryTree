@@ -4,6 +4,7 @@ import com.memorytree.arbiter.ContractArbiter;
 import com.memorytree.branch.ParallelBranchEvaluator;
 import com.memorytree.branch.RLBranch;
 import com.memorytree.dto.*;
+import com.memorytree.enums.SeverityLevel;
 import com.memorytree.kernel.IntrospectiveInferenceService;
 import com.memorytree.kernel.TrunkKernel;
 import com.memorytree.memory.MemoryBackend;
@@ -1467,7 +1468,7 @@ public class MainController {
                         .rule(rule)
                         .description(description)
                         .failSafe(false)
-                        .severity(0.5)
+                        .severity(SeverityLevel.MAJOR)
                         .enabled(existingClause != null ? existingClause.isEnabled() : true)
                         .build();
 

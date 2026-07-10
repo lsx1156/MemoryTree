@@ -3,6 +3,7 @@ package com.memorytree.arbiter;
 import com.memorytree.dto.ArbitrationResultDTO;
 import com.memorytree.dto.ContractClause;
 import com.memorytree.enums.ArbitrationResult;
+import com.memorytree.enums.SeverityLevel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -71,7 +72,7 @@ class DefaultContractArbiterTest {
                 .id("test-clause")
                 .name("测试规则")
                 .rule("必须包含测试关键词")
-                .severity(0.3)
+                .severity(SeverityLevel.MINOR)
                 .enabled(true)
                 .build());
 
