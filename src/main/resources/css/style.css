@@ -93,13 +93,8 @@
     -fx-pref-height: 52;
     -fx-alignment: CENTER;
     -fx-border-color: transparent;
-    -fx-border-width: 2 0 0 0;
+    -fx-border-width: 0;
     -fx-focus-traversable: false;
-}
-
-.side-icon-btn .label,
-.side-icon-btn .svg-path {
-    -fx-text-fill: #858585;
 }
 
 .side-icon-path {
@@ -119,10 +114,6 @@
     -fx-background-color: #2d2d2d;
 }
 
-.side-icon-btn:hover .label {
-    -fx-text-fill: #ffffff;
-}
-
 .side-icon-btn:hover .side-icon-path {
     -fx-fill: transparent;
     -fx-stroke: #ffffff;
@@ -130,11 +121,8 @@
 
 .side-icon-btn.active {
     -fx-background-color: rgba(14, 99, 156, 0.2);
-    -fx-border-color: #4fc1ff;
-}
-
-.side-icon-btn.active .label {
-    -fx-text-fill: #4fc1ff;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
 }
 
 .side-icon-btn.active .side-icon-path {
