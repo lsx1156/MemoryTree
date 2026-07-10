@@ -91,23 +91,39 @@ public class MemoryConsolidationService {
             return;
         }
 
-        MemoryEntry entry = MemoryEntry.builder()
-                .content(content)
-                .tags(java.util.Arrays.asList("对话记录", "推理结果"))
-                .saliencyScore(confidenceScore)
-                .build();
-        
-        workingMemory.addEntry(entry);
-        log.info("Conversation saved to working memory: id={}, confidence={}", entry.getId(), confidenceScore);
-
         GenerateResult mockResult = new GenerateResult();
         mockResult.setText(content);
         mockResult.setConfidenceScore(confidenceScore);
 
-        ConsolidationResult result = checkSignificance(mockResult);
-        if (result.isSignificant()) {
+        ConsolidationResult sigResult = checkSignificance(mockResult);
+
+        MemoryEntry entry = MemoryEntry.builder()
+                .content(content)
+                .tags(java.util.Arrays.asList("对话记录", "推理结果"))
+                .saliencyScore(confidenceScore)
+                .significant(sigResult.isSignificant())
+                .entropy(sigResult.getEntropy())
+                .consistency(sigResult.getConsistency())
+                .significanceReasons(sigResult.getReasons())
+                .userConfirmed(false)
+                .build();
+        
+        workingMemory.addEntry(entry);
+        log.info("Conversation saved to working memory: id={}, confidence={}, significant={}", 
+                entry.getId(), confidenceScore, sigResult.isSignificant());
+
+        if (sigResult.isSignificant()) {
             memoryBackend.store(entry);
-            log.info("Conversation consolidated to persistent memory: id={}", entry.getId());
+            log.info("Conversation consolidated to persistent memory (auto): id={}", entry.getId());
+        }
+    }
+
+    public void confirmMemory(String memoryId) {
+        MemoryEntry entry = workingMemory.getEntry(memoryId);
+        if (entry != null) {
+            entry.setUserConfirmed(true);
+            memoryBackend.store(entry);
+            log.info("Memory confirmed by user: id={}", memoryId);
         }
     }
 

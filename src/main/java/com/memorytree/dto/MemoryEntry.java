@@ -22,4 +22,9 @@ public class MemoryEntry {
     private double saliencyScore;
     private double heat;
     private List<Double> embedding;
+    private boolean significant;
+    private double entropy;
+    private double consistency;
+    private List<String> significanceReasons;
+    private boolean userConfirmed;
 }
