@@ -176,22 +176,32 @@
 
 .editor-tabpane .tab {
     -fx-background-color: #2d2d2d;
-    -fx-text-fill: #969696;
-    -fx-padding: 0 16;
+    -fx-text-fill: #858585;
+    -fx-padding: 0 20;
     -fx-background-radius: 0;
     -fx-border-color: transparent;
     -fx-border-width: 2 0 0 0;
     -fx-background-insets: 0;
 }
 
+.editor-tabpane .tab:hover {
+    -fx-background-color: #3d3d3d;
+    -fx-text-fill: #ffffff;
+}
+
 .editor-tabpane .tab:selected {
     -fx-background-color: rgba(14, 99, 156, 0.2);
     -fx-border-color: #4fc1ff;
+    -fx-border-width: 2 1 0 1;
 }
 
 .editor-tabpane .tab-label {
-    -fx-text-fill: #969696;
-    -fx-font-size: 12px;
+    -fx-text-fill: #858585;
+    -fx-font-size: 13px;
+}
+
+.editor-tabpane .tab:hover .tab-label {
+    -fx-text-fill: #ffffff;
 }
 
 .editor-tabpane .tab:selected .tab-label {
