@@ -91,19 +91,23 @@ public class MemoryConsolidationService {
             return;
         }
 
+        MemoryEntry entry = MemoryEntry.builder()
+                .content(content)
+                .tags(java.util.Arrays.asList("对话记录", "推理结果"))
+                .saliencyScore(confidenceScore)
+                .build();
+        
+        workingMemory.addEntry(entry);
+        log.info("Conversation saved to working memory: id={}, confidence={}", entry.getId(), confidenceScore);
+
         GenerateResult mockResult = new GenerateResult();
         mockResult.setText(content);
         mockResult.setConfidenceScore(confidenceScore);
 
         ConsolidationResult result = checkSignificance(mockResult);
         if (result.isSignificant()) {
-            MemoryEntry entry = MemoryEntry.builder()
-                    .content(content)
-                    .tags(new ArrayList<>())
-                    .build();
-            workingMemory.addEntry(entry);
             memoryBackend.store(entry);
-            log.info("Auto-consolidated memory with confidence={}", confidenceScore);
+            log.info("Conversation consolidated to persistent memory: id={}", entry.getId());
         }
     }
 
