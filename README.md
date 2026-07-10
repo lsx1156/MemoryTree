@@ -216,9 +216,294 @@ mvn clean package -DskipTests
 build_exe.bat
 ```
 
+### 5.4 首次运行
+
+1. 启动应用后，右侧状态面板会显示硬件信息
+2. 默认角色为**研究者**，已预置工作记忆和持久记忆
+3. 在「逻辑推理」Tab 中输入问题，点击「执行推理」开始推理
+4. 观察状态面板中的推理状态流转
+
 ***
 
-## 六、配置说明
+## 六、特性验证
+
+### 6.1 多核并行调度验证
+
+**验证方法：**
+1. 查看右侧状态面板的「硬件信息」，确认 CPU 核心数检测正确
+2. 观察日志输出：`Branch executor initialized with X threads`（X = CPU核心数 - 2）
+3. 在「树枝管理」Tab 中启用多个树枝，执行推理时观察并行评估
+
+**实现文件：**
+- [ParallelBranchEvaluator.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/ParallelBranchEvaluator.java) - 线程池并行执行
+- [CanopyParallelExplorer.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/CanopyParallelExplorer.java) - 多路径并行推理
+- [AsyncIOScheduler.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/AsyncIOScheduler.java) - 异步I/O调度
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| 线程池大小 | CPU核心数 - 2 |
+| 并行树枝评估 | 多个树枝同时执行 |
+| 推理流水线 | prefetch→generate→validate 重叠执行 |
+
+### 6.2 硬件自适应机制验证
+
+**验证方法：**
+1. 启动应用后查看右侧状态面板的「硬件信息」区域
+2. 确认显示的 CPU 核心数、内存大小、CPU 占用率、JVM 内存等信息正确
+3. 观察日志输出：`Hardware detected: CPU=X cores, Memory=Y GB`
+
+**实现文件：**
+- [HardwareDetector.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/HardwareDetector.java) - 硬件检测核心
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| CPU核心数 | 与系统实际核心数一致 |
+| 内存大小 | 与系统实际内存一致 |
+| CPU占用率 | 实时更新，范围 0-100% |
+| JVM内存 | 实时更新，显示已用/最大 |
+| 线程数 | 实时更新 |
+
+### 6.3 内省推理验证
+
+**验证方法：**
+1. 在「逻辑推理」Tab 中输入一个逻辑问题
+2. 点击「执行推理」
+3. 观察状态面板中的状态流转：`DRAFT_GENERATE → LOGIC_VALIDATE → REWRITE（如有）→ OUTPUT`
+4. 推理完成后查看结果区域的「内省轮次」显示
+
+**实现文件：**
+- [IntrospectiveInferenceService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/IntrospectiveInferenceService.java) - 内省推理核心
+- [InferenceStateMachine.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/scheduler/InferenceStateMachine.java) - 推理状态机
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| 状态流转 | IDLE → DRAFT_GENERATE → LOGIC_VALIDATE → OUTPUT |
+| 内省轮次 | 与设置的最大轮次一致或更少 |
+| 合规分数 | 0-1 范围内 |
+| 置信度 | 0-1 范围内 |
+
+### 6.4 记忆管理验证
+
+**验证方法：**
+1. 在「记忆管理」Tab 中查看工作记忆和持久记忆
+2. 添加一条新记忆，确认显示正确
+3. 执行推理后，观察记忆热度变化
+4. 使用搜索功能查找记忆
+
+**实现文件：**
+- [WorkingMemory.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/WorkingMemory.java) - 工作记忆
+- [FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) - 持久记忆
+- [MemoryConsolidationService.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryConsolidationService.java) - 记忆固化
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| 工作记忆容量 | ≤ 50 条 |
+| 持久记忆存储 | 保存到文件系统 |
+| 记忆搜索 | 关键词匹配正确 |
+| 记忆热度 | 范围 [0, 1]，推理后更新 |
+
+### 6.5 契约仲裁验证
+
+**验证方法：**
+1. 在「契约仲裁」Tab 中查看预设的契约规则
+2. 修改一条规则（如添加新的禁止词）
+3. 执行推理，观察仲裁结果变化
+4. 验证违规规则的严重程度分级
+
+**实现文件：**
+- [DefaultContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/DefaultContractArbiter.java) - 契约仲裁核心
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| 规则管理 | 支持增删改查 |
+| 规则启用/禁用 | 立即生效 |
+| 违规分级 | minor/major/critical |
+| 合规分数 | 基于违规严重程度计算 |
+
+### 6.6 运行时边界审计验证
+
+**验证方法：**
+1. 启动应用后观察日志输出
+2. 确认审计信息：记忆边界、内核内存、热度衰减、并行度
+
+**实现文件：**
+- [RuntimeBoundaryAuditor.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/system/RuntimeBoundaryAuditor.java) - 运行时边界审计
+
+**验证标准：**
+| 指标 | 预期值 |
+|-----|-------|
+| 记忆边界 | 容量 ≤ 50，热度 ∈ [0, 1] |
+| 内核内存 | ≤ 8GB |
+| 热度衰减 | 衰减率 ∈ [0, 1] |
+| 并行度 | ≤ CPU核心数 × 2 |
+
+***
+
+## 七、典型使用场景
+
+### 7.1 场景一：学术研究推理
+
+**适用场景：** 进行逻辑推理、论证分析、学术问题解答
+
+**操作步骤：**
+
+1. **准备前提条件**：
+   - 在「逻辑推理」Tab 的「前提条件」输入框中输入已知前提
+   - 每行一条前提，例如：
+     ```
+     所有的人都会死
+     苏格拉底是人
+     ```
+
+2. **输入问题**：
+   - 在「输入问题」输入框中输入要推理的问题
+   - 例如：`苏格拉底会死吗？`
+
+3. **执行推理**：
+   - 调整温度参数（推荐 0.7，越低越严谨）
+   - 设置内省轮次（推荐 3-5）
+   - 点击「执行推理」
+
+4. **查看结果**：
+   - 观察状态面板中的状态流转
+   - 查看推理结果区域的推导树和仲裁结果
+   - 检查合规分数和置信度
+
+**预期结果：**
+- 推理结果应包含逻辑推导过程
+- 契约仲裁应通过（合规分数 ≥ 0.8）
+- 置信度应较高（≥ 0.7）
+
+---
+
+### 7.2 场景二：记忆固化
+
+**适用场景：** 将重要推理结果保存到持久记忆
+
+**操作步骤：**
+
+1. **执行推理**：
+   - 完成一次推理，获得满意的结果
+
+2. **查看工作记忆**：
+   - 切换到「记忆管理」Tab
+   - 查看工作记忆列表，找到最新的推理结果
+
+3. **固化记忆**：
+   - 选中要固化的记忆条目
+   - 点击「固化到持久记忆」按钮
+   - 确认固化操作
+
+4. **验证固化**：
+   - 查看持久记忆列表，确认新条目已添加
+   - 下次启动应用时，该记忆仍然存在
+
+**预期结果：**
+- 工作记忆条目成功转移到持久记忆
+- 固化状态显示为「已固化」
+- 记忆热度值根据显著性自动设置
+
+---
+
+### 7.3 场景三：自定义契约规则
+
+**适用场景：** 根据特定需求定制输出规范
+
+**操作步骤：**
+
+1. **查看现有规则**：
+   - 切换到「契约仲裁」Tab
+   - 查看预设的契约规则列表
+
+2. **添加新规则**：
+   - 点击「添加规则」按钮
+   - 填写规则名称、规则内容、严重程度
+   - 示例规则：
+     ```
+     规则名称：禁止敏感词
+     规则内容：不得包含"机密"、"秘密"、"内部"
+     严重程度：critical
+     ```
+
+3. **启用规则**：
+   - 确保新规则处于启用状态
+   - 执行推理测试规则效果
+
+4. **验证规则**：
+   - 输入包含敏感词的问题
+   - 观察仲裁结果是否检测到违规
+   - 检查合规分数是否下降
+
+**预期结果：**
+- 违反规则时仲裁结果为 NON_COMPLIANT
+- 合规分数根据严重程度下降
+- Fail-Safe 规则触发时立即终止推理
+
+---
+
+### 7.4 场景四：多树枝并行评估
+
+**适用场景：** 同时使用多个技能树枝进行推理
+
+**操作步骤：**
+
+1. **查看树枝状态**：
+   - 切换到「树枝管理」Tab
+   - 查看可用树枝列表
+
+2. **启用树枝**：
+   - 确保「逻辑校验枝」和「谬误检测枝」处于启用状态
+   - 可以尝试添加自定义树枝
+
+3. **执行推理**：
+   - 返回「逻辑推理」Tab
+   - 输入问题并执行推理
+
+4. **观察并行评估**：
+   - 查看日志输出，确认多个树枝同时执行
+   - 观察状态面板中的评估结果
+
+**预期结果：**
+- 多个树枝并行执行观察
+- 动作仲裁融合各树枝结果
+- 推理结果综合各树枝评估
+
+---
+
+### 7.5 场景五：意识生命周期演示
+
+**适用场景：** 演示系统的状态清零能力
+
+**操作步骤：**
+
+1. **执行多次推理**：
+   - 完成几次推理，积累工作记忆
+
+2. **查看工作记忆**：
+   - 切换到「记忆管理」Tab
+   - 确认工作记忆中有多条记录
+
+3. **重置记忆**：
+   - 点击右上角「重置记忆」按钮
+   - 确认重置操作
+
+4. **验证清零**：
+   - 查看工作记忆，确认已清空
+   - 状态面板显示「空闲等待」
+
+**预期结果：**
+- 工作记忆完全清空
+- 系统状态恢复到初始状态
+- 可以重新开始推理
+
+***
+
+## 八、配置说明
 
 配置文件位于 [application.yml](file:///e:/AI/MemoryTree/src/main/resources/application.yml)：
 
@@ -244,7 +529,7 @@ memorytree:
 
 ***
 
-## 七、数据存储
+## 九、数据存储
 
 应用数据存储在用户目录下的 `.memorytree/` 文件夹中：
 
@@ -259,7 +544,7 @@ memorytree:
 
 ***
 
-## 八、目录结构
+## 十、目录结构
 
 ```
 MemoryTree/
@@ -574,7 +859,7 @@ MemoryTree/
 
 ***
 
-## 十二、鲁棒性测试标准
+## 十五、鲁棒性测试标准
 
 ### 12.1 鲁棒性测试项
 
@@ -614,7 +899,7 @@ MemoryTree/
 
 ***
 
-## 十三、Demo 默认角色说明
+## 十六、Demo 默认角色说明
 
 ### 13.1 默认研究者角色
 
@@ -666,7 +951,7 @@ MemoryTree/
 
 ***
 
-## 十四、构建与打包
+## 十七、构建与打包
 
 ### 14.1 环境准备
 
@@ -801,13 +1086,13 @@ release\MemoryTree\MemoryTree.exe
 
 ***
 
-## 十六、许可证
+## 十八、许可证
 
 本项目仅供学习与研究使用。
 
 ***
 
-## 十七、参考文献
+## 十九、参考文献
 
 ### 17.1 认知架构理论
 
