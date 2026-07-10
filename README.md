@@ -1,8 +1,8 @@
 ﻿# 记忆树 MemoryTree
 
-> 纯逻辑类脑AI框架 — V3.1 运行时边界审计规范参考实现
+> 纯逻辑类脑AI框架 — V3.1.3 架构解耦与工程完善
 >
-> 版本：V3.1 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.1 运行时边界审计规范》
+> 版本：V3.1.3 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.1 运行时边界审计规范》
 
 ***
 
@@ -820,6 +820,25 @@ MemoryTree/
 ***
 
 ## 十三、版本更新历史
+
+### V3.1.3（架构解耦与工程完善）- 2026-07-11
+
+**P2 架构重构：**
+
+| 重构项 | 说明 | 影响文件 |
+|-------|------|---------|
+| **拆分 OllamaTrunkKernel** | 将 419 行主类拆分为 4 个职责单一的组件：`OllamaHttpClient`（HTTP请求+JSON构建）、`OllamaResponseParser`（响应解析+mock数据）、`KernelMetricsCalculator`（置信度/reward计算）、`MockKVCacheManager`（KV cache句柄模拟）；主类降至 ~248 行 | [OllamaTrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaTrunkKernel.java)、[OllamaHttpClient.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaHttpClient.java)、[OllamaResponseParser.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/OllamaResponseParser.java)、[KernelMetricsCalculator.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/KernelMetricsCalculator.java)、[MockKVCacheManager.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/MockKVCacheManager.java) |
+| **新增集成测试** | 新增 `OllamaTrunkKernelIntegrationTest`，包含 26 个组件单元测试（始终运行）+ 3 个端到端集成测试（`-Dollama.test=true` 时调用真实 Ollama）；测试总数从 26 增至 55 | [OllamaTrunkKernelIntegrationTest.java](file:///e:/AI/MemoryTree/src/test/java/com/memorytree/kernel/OllamaTrunkKernelIntegrationTest.java) |
+| **公共接口 Javadoc** | 为 `TrunkKernel`、`MemoryBackend`、`RLBranch`、`ContractArbiter` 四个核心接口添加完整 Javadoc 文档 | [TrunkKernel.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/kernel/TrunkKernel.java)、[MemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/MemoryBackend.java)、[RLBranch.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/branch/RLBranch.java)、[ContractArbiter.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/arbiter/ContractArbiter.java) |
+
+**P3 工程化完善：**
+
+| 完善项 | 说明 | 影响文件 |
+|-------|------|---------|
+| **CHANGELOG.md** | 采用 Keep a Changelog 格式，覆盖 V2.0 至最新版本，按 Added/Changed/Removed/Fixed 分类 | [CHANGELOG.md](file:///e:/AI/MemoryTree/CHANGELOG.md) |
+| **CONTRIBUTING.md** | 贡献指南，包含开发环境搭建、代码规范、测试要求、提交规范、PR 流程、Issue 模板、项目结构 | [CONTRIBUTING.md](file:///e:/AI/MemoryTree/CONTRIBUTING.md) |
+
+---
 
 ### V3.1.2（深度审核整改）- 2026-07-11
 

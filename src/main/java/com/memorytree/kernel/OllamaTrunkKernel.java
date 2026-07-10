@@ -1,25 +1,43 @@
 package com.memorytree.kernel;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.memorytree.dto.GenerateConfig;
 import com.memorytree.dto.GenerateResult;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+/**
+ * 基于 Ollama 的 TrunkKernel 实现。
+ *
+ * <p>本类作为组装入口，将职责委派给四个独立组件：
+ * <ul>
+ *   <li>{@link OllamaHttpClient} — HTTP 请求发送与请求 JSON 构建</li>
+ *   <li>{@link OllamaResponseParser} — 响应 JSON 解析与 mock token/logits 生成</li>
+ *   <li>{@link KernelMetricsCalculator} — confidence/reward 计算</li>
+ *   <li>{@link MockKVCacheManager} — KV cache 句柄模拟</li>
+ * </ul>
+ */
 @Slf4j
 @Component
 public class OllamaTrunkKernel implements TrunkKernel {
+
+    private static final String LOGIC_INSTRUCTION =
+            "你是一个逻辑推理专家。请对给定的问题进行严格的形式逻辑推导。\n\n要求：\n" +
+            "1. 如果是数学问题，给出计算过程和正确答案\n" +
+            "2. 如果是逻辑命题，分析其真值条件\n" +
+            "3. 输出完整的推理链，标注每步的逻辑类型（演绎、归纳、假言推理等）\n" +
+            "4. 如果结论不成立，明确指出错误之处\n" +
+            "5. 不要添加任何修辞、情感或客套话\n" +
+            "6. 用中文输出";
 
     @Value("${memorytree.ollama.chat.model:qwen2.5:7b}")
     private String modelName;
@@ -27,43 +45,33 @@ public class OllamaTrunkKernel implements TrunkKernel {
     @Value("${memorytree.ollama.base-url:http://localhost:11434}")
     private String baseUrl;
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private OllamaHttpClient httpClient;
+    private final OllamaResponseParser responseParser = new OllamaResponseParser();
+    private final KernelMetricsCalculator metricsCalculator = new KernelMetricsCalculator();
+    private final MockKVCacheManager kvCacheManager = new MockKVCacheManager();
 
     private boolean loaded = false;
     private long loadTime = 0;
-    // MOCK: Ollama API does not expose real KV cache handles. This stores placeholder flags for interface compliance.
-    private String kvCacheHandle = null;
-    private Map<String, String> kvCacheStore = new HashMap<>();
+
+    @PostConstruct
+    public void init() {
+        this.httpClient = new OllamaHttpClient(modelName, baseUrl);
+    }
 
     @Override
     public GenerateResult generate(String prompt, GenerateConfig config) {
         long startTime = System.currentTimeMillis();
 
         try {
-            String logicInstruction = "你是一个逻辑推理专家。请对给定的问题进行严格的形式逻辑推导。\n\n要求：\n1. 如果是数学问题，给出计算过程和正确答案\n2. 如果是逻辑命题，分析其真值条件\n3. 输出完整的推理链，标注每步的逻辑类型（演绎、归纳、假言推理等）\n4. 如果结论不成立，明确指出错误之处\n5. 不要添加任何修辞、情感或客套话\n6. 用中文输出";
-            String fullPrompt = logicInstruction + "\n\n问题：" + prompt + "\n\n推理：";
+            String fullPrompt = LOGIC_INSTRUCTION + "\n\n问题：" + prompt + "\n\n推理：";
 
             double temperature = config.getTemperature();
             double topP = config.getTopP() > 0 ? config.getTopP() : 0.9;
             int numPredict = config.getMaxTokens() > 0 ? config.getMaxTokens() : 2048;
 
-            String requestJson = buildRequestJson(fullPrompt, temperature, topP, numPredict, false);
+            String requestJson = httpClient.buildRequestJson(fullPrompt, temperature, topP, numPredict, false);
 
-            log.info("Calling Ollama API: model={}, baseUrl={}", modelName, baseUrl);
-            log.debug("Request body: {}", requestJson);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl + "/api/generate"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestJson))
-                    .timeout(Duration.ofSeconds(120))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.sendGenerate(requestJson);
 
             if (response.statusCode() != 200) {
                 log.error("Ollama API returned status {}: {}", response.statusCode(), response.body());
@@ -73,7 +81,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
             String responseBody = response.body();
             log.debug("Ollama response: {}", responseBody.length() > 500 ? responseBody.substring(0, 500) + "..." : responseBody);
 
-            String generatedText = extractResponseText(responseBody);
+            String generatedText = responseParser.extractResponseText(responseBody);
 
             if (generatedText == null || generatedText.trim().isEmpty()) {
                 log.error("Ollama returned empty text. Full response: {}", responseBody);
@@ -81,18 +89,18 @@ public class OllamaTrunkKernel implements TrunkKernel {
             }
 
             long endTime = System.currentTimeMillis();
-            long ollamaTotalDuration = extractLongField(responseBody, "total_duration");
-            long ollamaEvalCount = extractLongField(responseBody, "eval_count");
+            long ollamaTotalDuration = responseParser.extractLongField(responseBody, "total_duration");
+            long ollamaEvalCount = responseParser.extractLongField(responseBody, "eval_count");
             long inferenceTimeMs = ollamaTotalDuration > 0 ? ollamaTotalDuration / 1_000_000 : (endTime - startTime);
             log.info("Ollama inference completed in {}ms, tokens: {}, text length: {}", inferenceTimeMs, ollamaEvalCount, generatedText.length());
 
             List<String> tokens = ollamaEvalCount > 0
-                    ? java.util.stream.IntStream.range(0, (int) ollamaEvalCount).mapToObj(i -> "tok_" + i).collect(java.util.stream.Collectors.toList())
-                    : tokenize(generatedText);
-            Map<Integer, double[]> logits = generateMockLogits(tokens.size());
+                    ? responseParser.generateMockTokens(ollamaEvalCount)
+                    : responseParser.tokenize(generatedText);
+            Map<Integer, double[]> logits = responseParser.generateMockLogits(tokens.size());
 
-            double confidence = calculateConfidence(generatedText);
-            double reward = calculateReward(generatedText, ollamaEvalCount, inferenceTimeMs);
+            double confidence = metricsCalculator.calculateConfidence(generatedText);
+            double reward = metricsCalculator.calculateReward(generatedText, ollamaEvalCount, inferenceTimeMs);
 
             return GenerateResult.builder()
                     .text(generatedText)
@@ -119,46 +127,25 @@ public class OllamaTrunkKernel implements TrunkKernel {
         return CompletableFuture.supplyAsync(() -> {
             long startTime = System.currentTimeMillis();
             StringBuilder fullResponse = new StringBuilder();
-            
+
             try {
-                String logicInstruction = "你是一个逻辑推理专家。请对给定的问题进行严格的形式逻辑推导。\n\n要求：\n1. 如果是数学问题，给出计算过程和正确答案\n2. 如果是逻辑命题，分析其真值条件\n3. 输出完整的推理链，标注每步的逻辑类型（演绎、归纳、假言推理等）\n4. 如果结论不成立，明确指出错误之处\n5. 不要添加任何修辞、情感或客套话\n6. 用中文输出";
-                String fullPrompt = logicInstruction + "\n\n问题：" + prompt + "\n\n推理：";
+                String fullPrompt = LOGIC_INSTRUCTION + "\n\n问题：" + prompt + "\n\n推理：";
 
                 double temperature = config.getTemperature();
                 double topP = config.getTopP() > 0 ? config.getTopP() : 0.9;
                 int numPredict = config.getMaxTokens() > 0 ? config.getMaxTokens() : 2048;
 
-                String requestJson = buildRequestJson(fullPrompt, temperature, topP, numPredict, true);
+                String requestJson = httpClient.buildRequestJson(fullPrompt, temperature, topP, numPredict, true);
 
-                log.info("Calling Ollama API (streaming): model={}", modelName);
-
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(baseUrl + "/api/generate"))
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(requestJson))
-                        .timeout(Duration.ofSeconds(120))
-                        .build();
-
-                AtomicReference<Boolean> done = new AtomicReference<>(false);
-                
-                httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
-                        .thenApply(HttpResponse::body)
-                        .thenAccept(lines -> {
-                            lines.forEach(line -> {
-                                if (line != null && !line.isEmpty()) {
-                                    String chunk = extractResponseText(line);
-                                    if (chunk != null && !chunk.isEmpty()) {
-                                        fullResponse.append(chunk);
-                                        if (streamCallback != null) {
-                                            streamCallback.accept(chunk);
-                                        }
-                                    }
-                                    if (line.contains("\"done\":true")) {
-                                        done.set(true);
-                                    }
-                                }
-                            });
-                        }).join();
+                httpClient.sendGenerateStream(requestJson, line -> {
+                    String chunk = responseParser.extractResponseText(line);
+                    if (chunk != null && !chunk.isEmpty()) {
+                        fullResponse.append(chunk);
+                        if (streamCallback != null) {
+                            streamCallback.accept(chunk);
+                        }
+                    }
+                }).join();
 
                 String generatedText = fullResponse.toString();
 
@@ -170,11 +157,11 @@ public class OllamaTrunkKernel implements TrunkKernel {
                 long endTime = System.currentTimeMillis();
                 log.info("Ollama streaming inference completed in {}ms, text length: {}", endTime - startTime, generatedText.length());
 
-                List<String> tokens = tokenize(generatedText);
-                Map<Integer, double[]> logits = generateMockLogits(tokens.size());
+                List<String> tokens = responseParser.tokenize(generatedText);
+                Map<Integer, double[]> logits = responseParser.generateMockLogits(tokens.size());
 
-                double confidence = calculateConfidence(generatedText);
-                double reward = calculateReward(generatedText, tokens.size(), endTime - startTime);
+                double confidence = metricsCalculator.calculateConfidence(generatedText);
+                double reward = metricsCalculator.calculateReward(generatedText, tokens.size(), endTime - startTime);
 
                 return GenerateResult.builder()
                         .text(generatedText)
@@ -195,97 +182,7 @@ public class OllamaTrunkKernel implements TrunkKernel {
         });
     }
 
-    private String buildRequestJson(String prompt, double temperature, double topP, int numPredict, boolean stream) {
-        try {
-            Map<String, Object> request = new HashMap<>();
-            request.put("model", modelName);
-            request.put("prompt", prompt);
-            request.put("stream", stream);
-
-            Map<String, Object> options = new HashMap<>();
-            options.put("temperature", temperature);
-            options.put("top_p", topP);
-            options.put("num_predict", numPredict);
-            request.put("options", options);
-
-            return objectMapper.writeValueAsString(request);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to build request JSON", e);
-        }
-    }
-
-    private long extractLongField(String json, String fieldName) {
-        String marker = "\"" + fieldName + "\":";
-        int start = json.indexOf(marker);
-        if (start < 0) return 0;
-        start += marker.length();
-        StringBuilder sb = new StringBuilder();
-        for (int i = start; i < json.length(); i++) {
-            char c = json.charAt(i);
-            if (c >= '0' && c <= '9') {
-                sb.append(c);
-            } else if (sb.length() > 0) {
-                break;
-            }
-        }
-        try {
-            return sb.length() > 0 ? Long.parseLong(sb.toString()) : 0;
-        } catch (NumberFormatException e) {
-            return 0;
-        }
-    }
-
-    private double calculateReward(String text, long tokenCount, long inferenceTimeMs) {
-        double reward = 0.5;
-        if (text != null && !text.isEmpty()) {
-            reward += Math.min(0.2, text.length() / 1000.0);
-        }
-        if (tokenCount > 50) {
-            reward += 0.15;
-        }
-        if (inferenceTimeMs > 0 && inferenceTimeMs < 30000) {
-            reward += 0.15;
-        }
-        return Math.min(1.0, Math.max(0.5, reward));
-    }
-
-    private String extractResponseText(String json) {
-        String marker = "\"response\":\"";
-        int start = json.indexOf(marker);
-        if (start < 0) {
-            marker = "\"response\": \"";
-            start = json.indexOf(marker);
-        }
-        if (start < 0) return null;
-
-        start += marker.length();
-        StringBuilder sb = new StringBuilder();
-        boolean escaped = false;
-        for (int i = start; i < json.length(); i++) {
-            char c = json.charAt(i);
-            if (escaped) {
-                switch (c) {
-                    case 'n' -> sb.append('\n');
-                    case 't' -> sb.append('\t');
-                    case 'r' -> sb.append('\r');
-                    case '"' -> sb.append('"');
-                    case '\\' -> sb.append('\\');
-                    case '/' -> sb.append('/');
-                    default -> sb.append(c);
-                }
-                escaped = false;
-            } else if (c == '\\') {
-                escaped = true;
-            } else if (c == '"') {
-                break;
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    // MOCK: Returns placeholder logits. Ollama API does not expose real logits.
+    // MOCK: Ollama API does not expose real logits. This generates placeholder data for interface compliance.
     @Override
     public double[] getLogits(String prompt) {
         double[] logits = new double[50257];
@@ -328,92 +225,23 @@ public class OllamaTrunkKernel implements TrunkKernel {
         return runtime.totalMemory() - runtime.freeMemory();
     }
 
-    private double calculateConfidence(String text) {
-        if (text == null || text.isEmpty()) {
-            return 0.5;
-        }
-        
-        double score = 0.5;
-        
-        if (text.contains("因此") || text.contains("所以") || text.contains("结论")) {
-            score += 0.1;
-        }
-        if (text.contains("推导") || text.contains("推理") || text.contains("论证")) {
-            score += 0.1;
-        }
-        if (text.contains("根据") || text.contains("基于") || text.contains("证据")) {
-            score += 0.1;
-        }
-        if (text.contains("假设") || text.contains("前提") || text.contains("条件")) {
-            score += 0.05;
-        }
-        if (text.contains("证明") || text.contains("验证")) {
-            score += 0.1;
-        }
-        if (text.length() > 200) {
-            score += 0.05;
-        }
-        
-        String[] sentences = text.split("[。！？;]");
-        if (sentences.length > 3) {
-            score += 0.05;
-        }
-        
-        return Math.min(0.95, Math.max(0.5, score));
-    }
-
-    private List<String> tokenize(String text) {
-        return Arrays.asList(text.split("\\s+"));
-    }
-
-    // MOCK: Ollama API does not expose real logits. This generates placeholder data for interface compliance.
-    private Map<Integer, double[]> generateMockLogits(int tokenCount) {
-        Map<Integer, double[]> logits = new HashMap<>();
-        Random random = new Random();
-        for (int i = 0; i < tokenCount; i++) {
-            double[] tokenLogits = new double[50257];
-            Arrays.fill(tokenLogits, -100);
-            int tokenId = random.nextInt(50257);
-            tokenLogits[tokenId] = 10;
-            logits.put(i, tokenLogits);
-        }
-        return logits;
-    }
-
     @Override
     public String getKVCacheHandle() {
-        if (kvCacheHandle == null) {
-            kvCacheHandle = "kv_cache_" + System.currentTimeMillis() + "_" + 
-                    Long.toHexString(Double.doubleToLongBits(Math.random()));
-            kvCacheStore.put(kvCacheHandle, "active");
-        }
-        return kvCacheHandle;
+        return kvCacheManager.getKVCacheHandle();
     }
 
     @Override
     public void clearKVCache() {
-        kvCacheHandle = null;
-        kvCacheStore.clear();
-        log.info("KV cache cleared");
+        kvCacheManager.clearKVCache();
     }
 
     @Override
     public String cloneKVCache() {
-        String sourceHandle = getKVCacheHandle();
-        String cloneHandle = "kv_cache_clone_" + System.currentTimeMillis() + "_" +
-                Long.toHexString(Double.doubleToLongBits(Math.random()));
-        kvCacheStore.put(cloneHandle, sourceHandle);
-        log.info("KV cache cloned: {} -> {}", sourceHandle, cloneHandle);
-        return cloneHandle;
+        return kvCacheManager.cloneKVCache();
     }
 
     @Override
     public void restoreKVCache(String handle) {
-        if (kvCacheStore.containsKey(handle)) {
-            kvCacheHandle = handle;
-            log.info("KV cache restored: {}", handle);
-        } else {
-            log.warn("KV cache handle not found: {}", handle);
-        }
+        kvCacheManager.restoreKVCache(handle);
     }
 }
