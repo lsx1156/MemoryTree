@@ -94,6 +94,7 @@
     -fx-alignment: CENTER;
     -fx-border-color: transparent;
     -fx-border-width: 2 0 0 0;
+    -fx-focus-traversable: false;
 }
 
 .side-icon-btn .label,
@@ -123,7 +124,7 @@
 }
 
 .side-icon-btn:hover .side-icon-path {
-    -fx-fill: #ffffff;
+    -fx-fill: transparent;
     -fx-stroke: #ffffff;
 }
 
@@ -137,7 +138,7 @@
 }
 
 .side-icon-btn.active .side-icon-path {
-    -fx-fill: #4fc1ff;
+    -fx-fill: transparent;
     -fx-stroke: #4fc1ff;
 }
 
@@ -192,7 +193,7 @@
 .editor-tabpane .tab:selected {
     -fx-background-color: rgba(14, 99, 156, 0.2);
     -fx-border-color: #4fc1ff;
-    -fx-border-width: 2 1 0 1;
+    -fx-border-width: 2 0 0 0;
 }
 
 .editor-tabpane .tab-label {
@@ -226,6 +227,19 @@
     -fx-border-width: 0 0 1 0;
     -fx-min-height: 38;
     -fx-pref-height: 38;
+}
+
+.tab-icon-wrap {
+    -fx-pref-width: 20;
+    -fx-pref-height: 20;
+}
+
+.tab-icon-path {
+    -fx-fill: transparent;
+    -fx-stroke: #858585;
+    -fx-stroke-width: 2;
+    -fx-stroke-linecap: round;
+    -fx-stroke-linejoin: round;
 }
 
 .tab-icon {

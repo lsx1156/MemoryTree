@@ -98,7 +98,9 @@
                                 <padding>
                                     <Insets top="8" right="16" bottom="8" left="16"/>
                                 </padding>
-                                <Label text="⚙️" styleClass="tab-icon"/>
+                                <StackPane styleClass="tab-icon-wrap">
+                                    <SVGPath content="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8zM12 6l4 4-4 4-4-4 4-4z" styleClass="tab-icon-path"/>
+                                </StackPane>
                                 <Label text="逻辑推理" styleClass="tab-title"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                                 <HBox spacing="10" alignment="CENTER">
@@ -162,7 +164,9 @@
                         <VBox styleClass="editor-page" spacing="0">
                             <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
                                 <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-                                <Label text="🗄️" styleClass="tab-icon"/>
+                                <StackPane styleClass="tab-icon-wrap">
+                                    <SVGPath content="M3 4h18v16H3V4zm0 2h18v4H3V6zm0 6h18v4H3v-4zm0 6h18v2H3v-2z" styleClass="tab-icon-path"/>
+                                </StackPane>
                                 <Label text="记忆管理" styleClass="tab-title"/>
                             </HBox>
                             <VBox styleClass="vertical-split" spacing="0" VBox.vgrow="ALWAYS">
@@ -226,7 +230,9 @@
                         <VBox styleClass="editor-page" spacing="0">
                             <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
                                 <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-                                <Label text="🌿" styleClass="tab-icon"/>
+                                <StackPane styleClass="tab-icon-wrap">
+                                    <SVGPath content="M12 2C7.6 2 4 5.6 4 10c0 2.4 1.1 4.6 2.9 6.1l-1.4 3.3L8 20l4-2 4 2-2.5-0.6-1.4-3.3C18.9 14.6 20 12.4 20 10c0-4.4-3.6-8-8-8zm0 14c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z" styleClass="tab-icon-path"/>
+                                </StackPane>
                                 <Label text="树枝管理" styleClass="tab-title"/>
                             </HBox>
                             <VBox styleClass="pane-body" VBox.vgrow="ALWAYS" spacing="12">
@@ -252,7 +258,9 @@
                         <VBox styleClass="editor-page" spacing="0">
                             <HBox styleClass="editor-toolbar" alignment="CENTER_LEFT" spacing="12">
                                 <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-                                <Label text="📜" styleClass="tab-icon"/>
+                                <StackPane styleClass="tab-icon-wrap">
+                                    <SVGPath content="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" styleClass="tab-icon-path"/>
+                                </StackPane>
                                 <Label text="契约仲裁" styleClass="tab-title"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                                 <Button text="添加规则" styleClass="btn-primary-sm" onAction="#handleAddContractRule"/>
