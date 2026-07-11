@@ -1,8 +1,15 @@
-﻿# 记忆树 MemoryTree
+﻿﻿﻿﻿﻿﻿# 记忆树 MemoryTree
+
+![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
+![Version](https://img.shields.io/badge/version-V3.1.4-green.svg)
+![Java](https://img.shields.io/badge/Java-21-orange.svg)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-green.svg)
 
 > 纯逻辑类脑AI框架 — V3.1.4 鲁棒性测试补强
 >
 > 版本：V3.1.4 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.1 运行时边界审计规范》
+>
+> 开源协议：[Apache License 2.0](LICENSE) | 署名要求：[NOTICE](NOTICE) | Copyright (c) 2026 lsx1156
 
 ***
 
@@ -827,6 +834,27 @@ MemoryTree/
 
 ## 十三、版本更新历史
 
+### V3.1.5（开源协议升级）- 2026-07-11
+
+**开源权益保护强化：**
+
+| 更新项 | 说明 | 影响文件 |
+|-------|------|---------|
+| **LICENSE 升级为 Apache 2.0** | 从 MIT 协议升级为 Apache License 2.0，新增显式专利授权条款，防范第三方抢注软著/专利风险；保留原有开放性，允许商用、修改、分发 | [LICENSE](LICENSE) |
+| **新增 NOTICE 文件** | 依据 Apache 2.0 第 4(d) 条，再分发者必须保留 NOTICE 文件中的归属信息；包含商业使用标注出处、源码版权头保留两项强制要求 | [NOTICE](NOTICE) |
+| **README 协议章节重写** | 第十七章从 MIT 说明更新为 Apache 2.0 完整说明，新增署名要求表、商业标注格式、学术引用建议、双授权声明、知识产权保护建议五个子章节 | [README.md](README.md) |
+| **README 顶部增加协议徽章** | 新增 License / Version / Java / Spring Boot 四个 shield.io 徽章，明确标识项目协议与版本 | [README.md](README.md) |
+
+**升级原因：**
+- Apache 2.0 的显式专利授权条款可防范第三方基于本项目抢注相关专利后反向维权
+- NOTICE 文件机制强化署名要求，降低二次开发删除版权头的风险
+- 双授权声明为后续版本预留商用授权主动权
+- 学术引用建议格式有助于在学术界固定架构首创性
+
+**已发布版本授权连续性：** V3.1.1 至 V3.1.4 基于 MIT 协议发布的版本其授权持续有效，不可撤回。从 V3.1.5 起采用 Apache License 2.0。
+
+---
+
 ### V3.1.4（鲁棒性测试补强）- 2026-07-11
 
 **新增 3 项鲁棒性测试：**
@@ -892,7 +920,7 @@ MemoryTree/
 
 | 修复项 | 说明 | 影响文件 |
 |-------|------|---------|
-| **添加 MIT LICENSE** | 项目原先无 LICENSE 文件，法律上不可被任何人合法使用；现已添加 MIT 开源协议 | [LICENSE](LICENSE) |
+| **添加开源协议** | 项目原先无 LICENSE 文件，法律上不可被任何人合法使用；V3.1.1 添加 MIT 协议，V3.1.5 升级为 Apache License 2.0 并附带 NOTICE 署名要求文件 | [LICENSE](LICENSE)、[NOTICE](NOTICE) |
 | **移除 spring-ai 0.8.1 预发布依赖** | 代码实际通过 `java.net.http.HttpClient` 直接调用 Ollama REST API，未使用任何 `org.springframework.ai` 类；移除该未使用的预发布依赖以消除 API 不稳定风险，同时移除 `spring-milestones` 仓库 | [pom.xml](file:///e:/AI/MemoryTree/pom.xml) |
 | **修复 persist() 异常吞没** | `FileSystemMemoryBackend.persist()` 原先 `catch (IOException e) { // ignore }` 隐藏了潜在错误；现改为记录 ERROR 日志并抛出 `RuntimeException`，避免数据丢失被静默掩盖 | [FileSystemMemoryBackend.java](file:///e:/AI/MemoryTree/src/main/java/com/memorytree/memory/FileSystemMemoryBackend.java) |
 | **删除陈旧 memory_store.json** | 旧文件缺失 `embedding`/`heat` 字段且时间为数组格式，证明新代码从未实际运行生成新产物；删除后应用启动时会重新生成包含完整字段和可读时间格式的新文件 | - |
@@ -1232,11 +1260,56 @@ release\MemoryTree\MemoryTree.exe
 
 ## 十七、许可证
 
-本项目基于 [MIT License](LICENSE) 开源协议发布。
+本项目基于 [Apache License 2.0](LICENSE) 开源协议发布。
 
 Copyright (c) 2026 lsx1156
 
-> **说明**：在遵守 MIT 协议前提下，任何人可自由使用、修改、分发本项目代码。项目仍主要面向学习与研究场景，不提供生产环境可用性担保。
+> **说明**：在遵守 Apache License 2.0 前提下，任何人可自由使用、修改、分发本项目代码。Apache 2.0 协议包含显式专利授权条款，为使用者与作者双方提供专利风险防护。项目仍主要面向学习与研究场景，不提供生产环境可用性担保。
+
+### 17.1 署名要求（NOTICE 文件）
+
+除 LICENSE 本身的要求外，本项目附带 [NOTICE](NOTICE) 文件，依据 Apache License 2.0 第 4(d) 条，再分发本作品或衍生作品时**必须保留** NOTICE 文件中的归属信息。NOTICE 文件包含以下附加要求：
+
+| 要求类型 | 法律效力 | 说明 |
+|---------|---------|------|
+| **商业使用标注出处** | ✅ 强制（依据 Section 4(d)） | 任何商业产品或服务若使用本项目或其四层认知架构，必须在产品文档、关于页面或仓库说明中标注原项目出处 |
+| **源码版权头保留** | ✅ 强制（依据 Section 4(b)、4(c)） | 衍生作品以源码形式分发时，必须保留原始版权头与许可证声明，禁止删除 |
+| **学术成果引用原项目** | ⚠️ 道德期望（非协议强制） | 基于本架构发表学术论文、技术报告时，强烈建议引用原项目 GitHub 地址与作者 |
+| **双授权空间保留** | ✅ 版权持有人权利保留 | 作者保留后续版本采用双授权（Apache 2.0 + 商用授权）的权利 |
+
+### 17.2 商业使用标注格式
+
+商业产品或服务中标注原项目出处时，建议使用以下格式：
+
+```
+Based on MemoryTree (https://github.com/lsx1156/MemoryTree)
+Copyright (c) 2026 lsx1156, licensed under the Apache License 2.0.
+```
+
+### 17.3 学术引用建议格式
+
+基于本项目或其架构发表学术成果时，建议按以下格式引用：
+
+```
+lsx1156. MemoryTree: A Pure-Logic Brain-Inspired Cognitive Architecture.
+https://github.com/lsx1156/MemoryTree, 2026.
+```
+
+### 17.4 双授权声明
+
+版权持有人保留以附加授权条款（包括但不限于商业授权）发布后续版本的权利。已基于 Apache License 2.0 发布的版本其授权持续有效，不可撤回。在本通告生效日之后提交贡献的贡献者，同意其贡献可基于 Apache License 2.0 或版权持有人为后续版本选择的任何附加授权条款提供。
+
+商业授权咨询请通过上述 GitHub 仓库联系作者。
+
+### 17.5 知识产权保护建议
+
+为防范第三方抢注软件著作权或相关专利，作者已保留以下权属证据：
+
+- GitHub 提交记录时间戳（首次提交即架构原创时间证明）
+- 架构设计文档版本快照（`记忆树_MemoryTree_V2.0/V2.1_认知架构规范.docx`）
+- 本仓库的 LICENSE 与 NOTICE 文件固定版权归属
+
+如发现第三方未经标注使用本架构申请软著、专利或发表学术成果，作者保留通过法律途径主张原创权属的权利。
 
 ***
 

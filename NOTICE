@@ -1,0 +1,81 @@
+MemoryTree
+Copyright 2026 lsx1156
+
+This product includes software developed by lsx1156
+(https://github.com/lsx1156/MemoryTree).
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+===========================================================================
+ATTRIBUTION REQUIREMENTS ( pursuant to Apache License 2.0, Section 4 )
+===========================================================================
+
+Redistributors of this Work or Derivative Works MUST retain this NOTICE
+file in at least one of the locations specified in Section 4(d) of the
+License. The following additional attribution requirements apply:
+
+1. Commercial Use Attribution
+   --------------------------
+   Any commercial product, service, or deployment that incorporates, is
+   built upon, or derives from this Work or its four-layer cognitive
+   architecture (Trunk Kernel / RL Branch / Memory Backend / Scheduler
+   Bus) MUST include a visible attribution to the original project in
+   at least one of the following locations:
+     - Product documentation (README, about page, user manual)
+     - Application "About" dialog or settings page
+     - Project website or source repository description
+
+   Required attribution text:
+     "Based on MemoryTree (https://github.com/lsx1156/MemoryTree)
+      Copyright (c) 2026 lsx1156, licensed under the Apache License 2.0."
+
+2. Source Header Retention
+   -----------------------
+   Derivative Works distributed in Source form MUST retain the original
+   copyright headers and license boilerplate in all modified files, as
+   required by Apache License 2.0, Section 4(b) and 4(c). Removal of
+   original copyright headers without replacement is prohibited.
+
+3. Academic Use Citation
+   ---------------------
+   While the Apache License 2.0 does not legally compel citation, the
+   author STRONGLY REQUESTS that any academic paper, technical report,
+   thesis, or publicly released research that:
+     (a) uses this Work or its source code, or
+     (b) adopts, implements, or extends the MemoryTree four-layer
+         cognitive architecture, multi-state-machine design, or
+         contract arbitration mechanism
+   cite the original project as follows:
+
+     lsx1156. MemoryTree: A Pure-Logic Brain-Inspired Cognitive
+     Architecture. https://github.com/lsx1156/MemoryTree, 2026.
+
+   This is a community norm request, not a license condition. However,
+   failure to cite may be considered inconsistent with accepted academic
+   attribution standards.
+
+===========================================================================
+DUAL LICENSING RESERVATION
+===========================================================================
+
+The copyright holder reserves the right to release future versions of
+this Work under additional licensing terms, including but not limited to
+commercial licensing options. The Apache License 2.0 grant for versions
+already released under it remains in effect and cannot be revoked.
+Contributors who submit Contributions after the effective date of this
+notice agree that such Contributions may be made available under either
+the Apache License 2.0 or any additional licensing terms selected by the
+copyright holder for future versions of the Work.
+
+For commercial licensing inquiries, please contact the author via the
+GitHub repository above.
