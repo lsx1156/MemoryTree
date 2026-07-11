@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿# 记忆树 MemoryTree
+﻿﻿﻿﻿﻿﻿﻿﻿# 记忆树 MemoryTree
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Version](https://img.shields.io/badge/version-V3.1.4-green.svg)
@@ -9,7 +9,7 @@
 >
 > 版本：V3.1.4 | 状态：正式发布 | 基于《记忆树 MemoryTree V3.1 运行时边界审计规范》
 >
-> 开源协议：[Apache License 2.0](LICENSE) | 署名要求：[NOTICE](NOTICE) | Copyright (c) 2026 lsx1156
+> 开源协议：[Apache License 2.0](LICENSE) | 署名要求：[NOTICE](NOTICE) | Copyright (c) 2026 骆世雄 <205391903@qq.com>
 
 ***
 

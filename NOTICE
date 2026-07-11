@@ -1,7 +1,7 @@
 MemoryTree
-Copyright 2026 lsx1156
+Copyright 2026 骆世雄 <205391903@qq.com>
 
-This product includes software developed by lsx1156
+This product includes software developed by 骆世雄
 (https://github.com/lsx1156/MemoryTree).
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,7 +37,7 @@ License. The following additional attribution requirements apply:
 
    Required attribution text:
      "Based on MemoryTree (https://github.com/lsx1156/MemoryTree)
-      Copyright (c) 2026 lsx1156, licensed under the Apache License 2.0."
+      Copyright (c) 2026 骆世雄, licensed under the Apache License 2.0."
 
 2. Source Header Retention
    -----------------------
@@ -57,7 +57,7 @@ License. The following additional attribution requirements apply:
          contract arbitration mechanism
    cite the original project as follows:
 
-     lsx1156. MemoryTree: A Pure-Logic Brain-Inspired Cognitive
+     骆世雄. MemoryTree: A Pure-Logic Brain-Inspired Cognitive
      Architecture. https://github.com/lsx1156/MemoryTree, 2026.
 
    This is a community norm request, not a license condition. However,
@@ -77,5 +77,5 @@ notice agree that such Contributions may be made available under either
 the Apache License 2.0 or any additional licensing terms selected by the
 copyright holder for future versions of the Work.
 
-For commercial licensing inquiries, please contact the author via the
-GitHub repository above.
+For commercial licensing inquiries, please contact the author at
+205391903@qq.com.
