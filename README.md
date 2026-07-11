@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿# 记忆树 MemoryTree
+﻿﻿﻿﻿﻿# 记忆树 MemoryTree
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)
 ![Version](https://img.shields.io/badge/version-V3.1.4-green.svg)
@@ -621,6 +621,10 @@ MemoryTree/
 │   ├── fxml/             # FXML 布局文件
 │   ├── css/              # 样式文件
 │   └── application.yml   # 应用配置
+├── docs/                 # 架构设计文档
+│   ├── 记忆树_MemoryTree_V2.0_认知架构规范.docx          # V2.0 架构规范
+│   ├── 记忆树_MemoryTree_V2.1_认知架构规范.docx          # V2.1 架构规范（运行时边界审计）
+│   └── 记忆树（MemoryTree）纯逻辑类脑AI框架_项目整理.docx  # 项目整体整理文档
 └── pom.xml               # Maven 配置
 ```
 
