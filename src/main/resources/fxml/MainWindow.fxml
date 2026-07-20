@@ -22,7 +22,7 @@
                 <Label text="🌳" styleClass="logo-icon"/>
             </StackPane>
             <VBox>
-                <Label text="记忆树 MemoryTree" styleClass="app-title"/>
+                <Label text="记忆树认知推理平台V1.0" styleClass="app-title"/>
             </VBox>
             <Label fx:id="versionLabel" text="V3.1" styleClass="version-tag"/>
             <Region HBox.hgrow="ALWAYS"/>

@@ -64,7 +64,7 @@ public class MemoryTreeFxApplication extends Application {
         Scene scene = new Scene(root, 1000, 700);
         scene.getStylesheets().add(getClass().getResource("/css/style.css").toExternalForm());
         
-        primaryStage.setTitle("MemoryTree - 记忆树AI框架");
+        primaryStage.setTitle("记忆树认知推理平台V1.0");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
